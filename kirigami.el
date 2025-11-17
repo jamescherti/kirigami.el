@@ -487,7 +487,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (if kirigami-mode
       (progn
         (when kirigami-enhance-outline
-          (advice-add 'outline-show-entry :around #'kirigami--outline-show-entry))
+          (advice-add 'outline-show-entry :override #'kirigami--outline-show-entry))
 
         (when kirigami-unfold-on-jump
           (kirigami--reveal-on-jump-set-hooks t)))
