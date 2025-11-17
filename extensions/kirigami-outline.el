@@ -30,8 +30,7 @@ modes such as `outline-indent-mode' and `org-mode'."
   (save-excursion
     (outline-back-to-heading)
     (end-of-line)
-    (outline-invisible-p (point)))
-  (error "Required outline functions are undefined"))
+    (outline-invisible-p (point))))
 
 (defun kirigami-outline--legacy-show-entry ()
   "Show the body directly following this heading.
@@ -46,8 +45,7 @@ This is the Emacs version of `outline-show-entry'."
                            (if (= 1 (- (point-max) (point)))
                                (point-max)
                              (point)))
-                         nil))
-  (error "Required outline functions are undefined"))
+                         nil)))
 
 (defun kirigami-outline--legacy-hide-subtree (&optional event)
   "Hide everything after this heading at deeper levels.
@@ -57,8 +55,7 @@ This is the Emacs version of `outline-hide-subtree'."
   (save-excursion
     (when (mouse-event-p event)
       (mouse-set-point event))
-    (outline-flag-subtree t))
-  (error "Required outline functions are undefined"))
+    (outline-flag-subtree t)))
 
 (defun kirigami-outline--show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
@@ -92,8 +89,7 @@ the entry is fully visible."
           (kirigami-outline--legacy-hide-subtree)))
     ;; `outline-back-to-heading' issue
     (outline-before-first-heading
-     nil))
-  (error "Required outline functions are undefined"))
+     nil)))
 
 (defun kirigami-outline--hide-subtree ()
   "Close the previous lower-level heading if current heading is folded or empty.
@@ -110,8 +106,7 @@ with a lower level and close its subtree. Otherwise, close the current subtree."
           (outline-up-heading 1 t)
           (when (outline-on-heading-p)
             (kirigami-outline--legacy-hide-subtree)))
-      (kirigami-outline--legacy-hide-subtree)))
-  (error "Required outline functions are undefined"))
+      (kirigami-outline--legacy-hide-subtree))))
 
 ;;;###autoload
 (define-minor-mode kirigami-outline-global-mode
@@ -123,7 +118,7 @@ modes such as `outline-indent-mode' and `org-mode'."
   :group 'kirigami-outline
   (if kirigami-outline-global-mode
       (advice-add 'outline-show-entry :override #'kirigami-outline--show-entry)
-    (advice-add 'outline-show-entry :override #'kirigami-outline--show-entry)))
+    (advice-remove 'outline-show-entry #'kirigami-outline--show-entry)))
 
 (provide 'kirigami-outline)
 ;;; kirigami-outline.el ends here
