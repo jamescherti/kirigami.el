@@ -29,7 +29,7 @@
 
 ;;; Variables
 
-(defvar kirigami-outline-enhancements nil
+(defvar kirigami-outline-enhancements t
   "Enable enhancements for `outline' and `outline-minor-mode' mode.
 When non-nil, kirigami improves folding behavior in `outline' mode, addressing
 common issues with opening, closing, and navigating folds.

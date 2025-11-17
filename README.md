@@ -91,6 +91,32 @@ doom sync
 
 ## Usage
 
+### Vanilla Emacs Key bindings
+
+Here is an example of default key bindings:
+```elisp
+(global-set-key (kbd "C-c k o") 'kirigami-open-fold)     ; Open fold at point
+(global-set-key (kbd "C-c k O") 'kirigami-open-fold-rec) ; Open fold recursively
+(global-set-key (kbd "C-c k m") 'kirigami-close-folds)   ; Close all folds
+(global-set-key (kbd "C-c k c") 'kirigami-close-fold)    ; Close fold at point
+(global-set-key (kbd "C-c k r") 'kirigami-open-folds)    ; Open all folds
+(global-set-key (kbd "C-c k TAB") 'kirigami-toggle-fold) ; Toggle fold at point
+```
+
+### Evil-mode Key Bindings
+
+Evil-mode users can override the default folding keys with the following configuration:
+
+```elisp
+;; Configure Kirigami to replace the default Evil-mode folding key bindings
+(define-key evil-normal-state-map "zo" 'kirigami-open-fold)
+(define-key evil-normal-state-map "zO" 'kirigami-open-fold-rec)
+(define-key evil-normal-state-map "zr" 'kirigami-open-folds)
+(define-key evil-normal-state-map "zc" 'kirigami-close-fold)
+(define-key evil-normal-state-map "zm" 'kirigami-close-folds)
+(define-key evil-normal-state-map "za" 'kirigami-toggle-fold)
+```
+
 ### Commands
 
 Kirigami defines several interactive commands. These commands abstract over all supported folding systems:
