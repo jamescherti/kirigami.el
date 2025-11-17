@@ -1,4 +1,4 @@
-# kirigami.el - A unified interface for text folding across a diverse set of major and minor modes
+# kirigami.el - A unified interface for text folding across a diverse set of Emacs major and minor modes
 ![Build Status](https://github.com/jamescherti/kirigami.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://raw.githubusercontent.com/jamescherti/kirigami.el/main/.images/made-for-gnu-emacs.svg)
@@ -20,7 +20,7 @@ If this enhances your workflow, please show your support by **⭐ starring kirig
 
 ## Features
 
-
+Here are the features that **kirigami** offers:
 * **Uniform commands**: The same commands and keys can be used to open, close, toggle, or check folds, no matter what mode is active. (Commands: `kirigami-open-fold`, `kirigami-open-fold-rec`, `kirigami-open-folds`, `kirigami-close-fold`, `kirigami-toggle-fold`, `kirigami-close-folds`)
 * **Automatic handler selection**: Kirigami automatically chooses the right folding method based on the mode being used.
 * **Extensible fold list**: Users can easily add or customize folding methods for different modes through the `kirigami-fold-list` alist.
