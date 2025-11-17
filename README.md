@@ -14,7 +14,10 @@ With Kirigami, folding key bindings only need to be configured **once**. After t
 * `kirigami-close-folds`: Close all folds in the buffer.
 * `kirigami-toggle-fold`: Toggle the fold at point.
 
-This eliminates the need to memorize or configure separate key bindings for each mode, providing a **truly unified and efficient workflow**. Users can fold, unfold, and navigate sections immediately, regardless of the file type or mode, saving time and reducing errors.
+The package also offer extensions:
+
+* **kirigami-jump**: Integrates Kirigami with Emacs and third-party packages jump mechanisms so navigation never lands inside hidden text. It adds hooks and advices for subsystems such as xref, imenu, consult, save-place, flymake, evil jumps, bookmarks, grep, and org-agenda, creating consistent behavior across all jump related operations.
+* **kirigami-outline**: Optional improvements for `outline-mode`, `outline-minor-mode`, `org-mode`... (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).) When enabled, the package augments behavior related to heading visibility, folded entries, and subtree navigation. These enhancements correct inconsistencies in built-in outline operations and address long-standing bugs in fold visibility and cursor-driven unfolding.
 
 If this enhances your workflow, please show your support by **⭐ starring kirigami.el on GitHub** to help more Emacs users discover its benefits.
 
@@ -33,10 +36,8 @@ Here are the features that **kirigami** offers:
   * `hs-minor-mode`
   * `hide-ifdef-mode`
   * `origami-mode`
-
-Extensions:
-* **kirigami-jump**: Integrates Kirigami with Emacs and third-party packages jump mechanisms so navigation never lands inside hidden text. It adds hooks and advices for subsystems such as xref, imenu, consult, save-place, flymake, evil jumps, bookmarks, grep, and org-agenda, creating consistent behavior across all jump related operations.
-* **kirigami-outline**: Optional improvements for `outline-mode` and `outline-minor-mode`. (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).) When enabled, the package augments behavior related to heading visibility, folded entries, and subtree navigation. These enhancements correct inconsistencies in built-in outline operations and address long-standing bugs in fold visibility and cursor-driven unfolding.
+* Extension: **kirigami-jump**: Integrates Kirigami with Emacs and third-party packages jump mechanisms so navigation never lands inside hidden text.
+* Extension: **kirigami-outline**: Optional improvements for `outline-mode` and `outline-minor-mode`. (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).)
 
 ## Installation
 
