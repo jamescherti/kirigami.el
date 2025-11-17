@@ -35,11 +35,11 @@ If this enhances your workflow, please show your support by **⭐ starring kirig
   * `origami-mode`
 
 Extensions:
-* kirigami-outline: Optional improvements for `outline-mode` and `outline-minor-mode` modes enabled through a dedicated variable (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html)).
+* **kirigami-outline**: Optional improvements for `outline-mode` and `outline-minor-mode` modes enabled through a dedicated variable (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html)).
 
 ## Installation
 
-### Emacs: use-package and straight (Emacs version < 30)
+### Emacs: use-package and straight
 
 To install *kirigami* with `straight.el`:
 
@@ -51,30 +51,14 @@ To install *kirigami* with `straight.el`:
   :straight (kirigami
              :type git
              :host github
-             :repo "jamescherti/kirigami.el")
+             :repo "jamescherti/kirigami.el"
+             :files (:defaults "extensions/kirigami*.el"))
   :config
   (with-eval-after-load 'outline
     ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
     ;; related modes such as 'outline-indent-mode' and 'org-mode'.
     (require 'kirigami-outline)
-    (kirigami-outline-mode)))
-```
-
-### Alternative installation: use-package and :vc (Built-in feature in Emacs version >= 30)
-
-To install *kirigami* with `use-package` and `:vc` (Emacs >= 30):
-
-``` emacs-lisp
-(use-package kirigami
-  :ensure t
-  :vc (:url "https://github.com/jamescherti/kirigami.el"
-            :rev :newest)
-  :config
-  (with-eval-after-load 'outline
-    ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
-    ;; related modes such as 'outline-indent-mode' and 'org-mode'.
-    (require 'kirigami-outline)
-    (kirigami-outline-mode)))
+    (kirigami-outline-global-mode)))
 ```
 
 ### Alternative installation: Doom Emacs
@@ -95,7 +79,7 @@ Here is how to install *kirigami* on Doom Emacs:
           ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
           ;; related modes such as 'outline-indent-mode' and 'org-mode'.
           (require 'kirigami-outline)
-          (kirigami-outline-mode)))
+          (kirigami-outline-global-mode)))
 ```
 
 3. Run the `doom sync` command:

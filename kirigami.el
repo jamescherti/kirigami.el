@@ -116,7 +116,7 @@
                            (fboundp 'outline-indent-open-fold))
                       (outline-indent-open-fold))
 
-                     ((bound-and-true-p kirigami-outline-mode)
+                     ((bound-and-true-p kirigami-outline-global-mode)
                       (when (fboundp 'kirigami--outline-show-entry)
                         (kirigami--outline-show-entry)))
 
@@ -129,7 +129,7 @@
      :close      ;; hide-subtree
      ,(lambda ()
         (cond
-         ((bound-and-true-p kirigami-outline-mode)
+         ((bound-and-true-p kirigami-outline-global-mode)
           (when (fboundp 'kirigami--outline-hide-subtree)
             (kirigami--outline-hide-subtree)))
 
