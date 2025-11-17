@@ -109,14 +109,14 @@ with a lower level and close its subtree. Otherwise, close the current subtree."
       (kirigami-outline--legacy-hide-subtree))))
 
 ;;;###autoload
-(define-minor-mode kirigami-outline-global-mode
+(define-minor-mode kirigami-outline-mode
   "Enhancements for `outline-mode', `outline-minor-mode', and related modes.
 Optional enhancements for `outline-mode', `outline-minor-mode', and related
 modes such as `outline-indent-mode' and `org-mode'."
   :global t
   :lighter " KirigamiOL"
   :group 'kirigami-outline
-  (if kirigami-outline-global-mode
+  (if kirigami-outline-mode
       (advice-add 'outline-show-entry :override #'kirigami-outline--show-entry)
     (advice-remove 'outline-show-entry #'kirigami-outline--show-entry)))
 

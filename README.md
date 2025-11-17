@@ -58,7 +58,7 @@ To install *kirigami* with `straight.el`:
     ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
     ;; related modes such as 'outline-indent-mode' and 'org-mode'.
     (require 'kirigami-outline)
-    (kirigami-outline-global-mode)))
+    (kirigami-outline-mode)))
 ```
 
 ### Alternative installation: Doom Emacs
@@ -79,7 +79,7 @@ Here is how to install *kirigami* on Doom Emacs:
           ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
           ;; related modes such as 'outline-indent-mode' and 'org-mode'.
           (require 'kirigami-outline)
-          (kirigami-outline-global-mode)))
+          (kirigami-outline-mode)))
 ```
 
 3. Run the `doom sync` command:
