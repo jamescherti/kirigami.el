@@ -16,8 +16,6 @@ With Kirigami, folding key bindings only need to be configured **once**. After t
 
 This eliminates the need to memorize or configure separate key bindings for each mode, providing a **truly unified and efficient workflow**. Users can fold, unfold, and navigate sections immediately, regardless of the file type or mode, saving time and reducing errors.
 
-The Kirigami package also introduces **optional enhancements for outline-mode** and a **configurable set of handlers** that integrate with existing folding frameworks.
-
 If this enhances your workflow, please show your support by **⭐ starring kirigami.el on GitHub** to help more Emacs users discover its benefits.
 
 ## Features
@@ -35,7 +33,9 @@ If this enhances your workflow, please show your support by **⭐ starring kirig
   * `hs-minor-mode`
   * `hide-ifdef-mode`
   * `origami-mode`
-* Optional improvements (defcustom: `kirigami-outline-enhancements`) for `outline-mode` and `outline-minor-mode` modes enabled through a dedicated variable (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html)).
+
+Extensions:
+* kirigami-outline: Optional improvements for `outline-mode` and `outline-minor-mode` modes enabled through a dedicated variable (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html)).
 
 ## Installation
 
@@ -51,7 +51,13 @@ To install *kirigami* with `straight.el`:
   :straight (kirigami
              :type git
              :host github
-             :repo "jamescherti/kirigami.el"))
+             :repo "jamescherti/kirigami.el")
+  :config
+  (with-eval-after-load 'outline
+    ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
+    ;; related modes such as 'outline-indent-mode' and 'org-mode'.
+    (require 'kirigami-outline)
+    (kirigami-outline-mode)))
 ```
 
 ### Alternative installation: use-package and :vc (Built-in feature in Emacs version >= 30)
@@ -62,10 +68,16 @@ To install *kirigami* with `use-package` and `:vc` (Emacs >= 30):
 (use-package kirigami
   :ensure t
   :vc (:url "https://github.com/jamescherti/kirigami.el"
-       :rev :newest))
+            :rev :newest)
+  :config
+  (with-eval-after-load 'outline
+    ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
+    ;; related modes such as 'outline-indent-mode' and 'org-mode'.
+    (require 'kirigami-outline)
+    (kirigami-outline-mode)))
 ```
 
-### Alternative installation 2: Doom Emacs
+### Alternative installation: Doom Emacs
 
 Here is how to install *kirigami* on Doom Emacs:
 
@@ -79,9 +91,11 @@ Here is how to install *kirigami* on Doom Emacs:
 2. Add to `~/.doom.d/config.el`:
 ```elisp
 (after! kirigami
-  ;; TODO: setq options
-  ;; TODO: Load the mode here
-  )
+        (with-eval-after-load 'outline
+          ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
+          ;; related modes such as 'outline-indent-mode' and 'org-mode'.
+          (require 'kirigami-outline)
+          (kirigami-outline-mode)))
 ```
 
 3. Run the `doom sync` command:
@@ -143,7 +157,7 @@ Kirigami defines several interactive commands. These commands abstract over all 
 
 ### Outline specific enhancements
 
-Kirigami includes optional improvements for outline-based modes, activated when the `kirigami-outline-enhancements` variable is non-nil.
+Kirigami includes the kirigami-outline extension which improves outline-based modes.
 
 When enabled, the package augments behavior related to heading visibility, folded entries, and subtree navigation. These enhancements correct inconsistencies in built-in outline operations and address long-standing bugs in fold visibility and cursor-driven unfolding.
 When outline enhancements are enabled, the package provides corrective behavior for several outline operations:
