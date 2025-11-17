@@ -59,6 +59,17 @@
           :tag "Github"
           "https://github.com/jamescherti/kirigami.el"))
 
+(defvar kirigami-outline-enhancements t
+  "Enable enhancements for `outline' and `outline-minor-mode' mode.
+When non-nil, kirigami improves folding behavior in `outline' mode, addressing
+common issues with opening, closing, and navigating folds.
+
+For example, it addresses bugs reported here:
+https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html
+
+It is recommended to keep this variable set to t unless there is a
+specific reason to disable these enhancements.")
+
 (defvar kirigami-fold-list
   `(((vdiff-mode)
      :invisible-p  ,(lambda () (invisible-p (point)))
@@ -116,9 +127,9 @@
                            (fboundp 'outline-indent-open-fold))
                       (outline-indent-open-fold))
 
-                     ((and (bound-and-true-p kirigami-outline-mode)
-                           (fboundp 'kirigami-outline--show-entry))
-                      (kirigami-outline--show-entry))
+                     ((and kirigami-outline-enhancements
+                           (fboundp 'kirigami--outline-show-entry))
+                      (kirigami--outline-show-entry))
 
                      (t
                       (with-no-warnings
@@ -129,9 +140,9 @@
      :close      ;; hide-subtree
      ,(lambda ()
         (cond
-         ((and (bound-and-true-p kirigami-outline-mode)
-               (fboundp 'kirigami-outline--hide-subtree))
-          (kirigami-outline--hide-subtree))
+         ((and kirigami-outline-enhancements
+               (fboundp 'kirigami--outline-hide-subtree))
+          (kirigami--outline-hide-subtree))
 
          (t
           (with-no-warnings
@@ -191,7 +202,7 @@ would ignore `:close-all' actions and invoke the provided functions on
 ;;   :type 'boolean
 ;;   :group 'kirigami)
 
-;;; Internal variables
+;;; Internal functions
 
 ;; (defun kirigami--message (&rest args)
 ;;   "Display a message with the same ARGS arguments as `message'."
@@ -204,8 +215,6 @@ would ignore `:close-all' actions and invoke the provided functions on
 ;;      (when kirigami-verbose
 ;;        (kirigami--message
 ;;         (concat ,(car args)) ,@(cdr args)))))
-
-;;; Internal functions
 
 (defun kirigami--mode-p (modes)
   "Check if any symbol in MODES matches the current buffer's modes."
@@ -235,6 +244,110 @@ would ignore `:close-all' actions and invoke the provided functions on
   (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
     (when fn
       (with-demoted-errors "Error: %S" (funcall fn)))))
+
+;;; Functions: `outline' enhancements (`kirigami-outline-enhancements')
+
+(defun kirigami--outline-heading-folded-p ()
+  "Return non-nil if the body following the current heading is folded."
+  (if (and (fboundp 'outline-back-to-heading)
+           (fboundp 'outline-invisible-p))
+      (save-excursion
+        (outline-back-to-heading)
+        (end-of-line)
+        (outline-invisible-p (point)))
+    (error "Required outline functions are undefined")))
+
+(defun kirigami--outline-legacy-show-entry ()
+  "Show the body directly following this heading.
+Show the heading too, if it is currently invisible.
+This is the Emacs version of `outline-show-entry'."
+  (interactive)
+  (if (and (fboundp 'outline-back-to-heading)
+           (fboundp 'outline-flag-region)
+           (fboundp 'outline-next-preface))
+      (save-excursion
+        (outline-back-to-heading t)
+        (outline-flag-region (1- (point))
+                             (progn
+                               (outline-next-preface)
+                               (if (= 1 (- (point-max) (point)))
+                                   (point-max)
+                                 (point)))
+                             nil))
+    (error "Required outline functions are undefined")))
+
+(defun kirigami--outline-legacy-hide-subtree (&optional event)
+  "Hide everything after this heading at deeper levels.
+If non-nil, EVENT should be a mouse event.
+This is the Emacs version of `outline-hide-subtree'."
+  (interactive (list last-nonmenu-event))
+  (if (and (fboundp 'outline-flag-subtree))
+      (save-excursion
+        (when (mouse-event-p event)
+          (mouse-set-point event))
+        (outline-flag-subtree t))
+    (error "Required outline functions are undefined")))
+
+(defun kirigami--outline-show-entry (&rest _)
+  "Ensure the current heading and body are fully visible.
+Repeatedly reveal children and body until the entry is no longer folded.
+
+- Goes back to the heading.
+- Runs `outline-show-children' (ensures immediate children are made visible).
+- Runs the legacy `outline-show-entry' function to reveal the body.
+
+After the loop, calls `kirigami--outline-legacy-show-entry' once more to ensure
+the entry is fully visible."
+  (interactive)
+  (if (and (fboundp 'outline-on-heading-p)
+           (fboundp 'outline-invisible-p)
+           (fboundp 'outline-back-to-heading)
+           (fboundp 'outline-show-children))
+      (condition-case nil
+          (let ((on-invisible-heading (save-excursion
+                                        (beginning-of-line)
+                                        (when (outline-on-heading-p t)
+                                          (outline-invisible-p)))))
+            ;; Repeatedly reveal children and body until the entry is no longer
+            ;; folded
+            (progn
+              (while (kirigami--outline-heading-folded-p)
+                (save-excursion
+                  (outline-back-to-heading)
+                  (outline-show-children)
+                  (kirigami--outline-legacy-show-entry))))
+
+            ;; If the header was previously hidden, hide the subtree to collapse
+            ;; it. Otherwise, leave the fold open. This allows the user to
+            ;; decide whether to expand the content under the cursor.
+            (when on-invisible-heading
+              (kirigami--outline-legacy-hide-subtree)))
+        ;; `outline-back-to-heading' issue
+        (outline-before-first-heading
+         nil))
+    (error "Required outline functions are undefined")))
+
+(defun kirigami--outline-hide-subtree ()
+  "Close the previous lower-level heading if current heading is folded or empty.
+If the current heading is folded or empty, move to the previous heading
+with a lower level and close its subtree. Otherwise, close the current subtree."
+  (if (and (fboundp 'outline-back-to-heading)
+           (fboundp 'outline-end-of-subtree)
+           (fboundp 'outline-up-heading)
+           (fboundp 'outline-on-heading-p))
+      (save-excursion
+        (outline-back-to-heading)
+        (if (or (kirigami--outline-heading-folded-p)
+                ;; Fold without any content
+                (let ((start (save-excursion (end-of-line) (point)))
+                      (end (save-excursion (outline-end-of-subtree) (point))))
+                  (= start end)))
+            (progn
+              (outline-up-heading 1 t)
+              (when (outline-on-heading-p)
+                (kirigami--outline-legacy-hide-subtree)))
+          (kirigami--outline-legacy-hide-subtree)))
+    (error "Required outline functions are undefined")))
 
 ;;; Functions: open/close folds
 
@@ -291,6 +404,16 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
 (defun kirigami-invisible-p ()
   "Return t if text is invisible."
   (kirigami-fold-action kirigami-fold-list :invisible-p))
+
+;;;###autoload
+(define-minor-mode kirigami-mode
+  "A unified method to fold and unfold text."
+  :global t
+  :lighter " Kirigami"
+  :group 'kirigami
+  (if kirigami-mode
+      t
+    t))
 
 (provide 'kirigami)
 ;;; kirigami.el ends here

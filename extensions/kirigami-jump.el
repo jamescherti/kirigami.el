@@ -29,19 +29,19 @@
 ;;; Require
 
 (require 'kirigami)
-(require 'kirigami-outline)
 
 (defun kirigami-jump--outline-open-parent-headers (&rest _)
   "Reveal the entry at point while ignoring errors."
-  (save-excursion
-    (catch 'done
-      (while t
-        (unless (eq (ignore-errors (outline-up-heading 1 t)
-                                   :success)
-                    :success)
-          (throw 'done t))
+  (when (fboundp 'outline-up-heading)
+    (save-excursion
+      (catch 'done
+        (while t
+          (unless (eq (ignore-errors (outline-up-heading 1 t)
+                                     :success)
+                      :success)
+            (throw 'done t))
 
-        (kirigami-outline--legacy-show-entry)))))
+          (kirigami--outline-legacy-show-entry))))))
 
 (defun kirigami-jump--open-fold (&rest _)
   "Ensure the current heading and body are fully visible."
@@ -53,7 +53,7 @@
   (let ((result nil))
     (unwind-protect
         (progn (setq result (apply fn args))
-               (outline-show-entry))
+               (kirigami-open-fold))
       result)))
 
 (defun kirigami-jump--outline-after-jump-when-not-minibuffer ()

@@ -15,9 +15,8 @@ With Kirigami, folding key bindings only need to be configured **once**. After t
 * `kirigami-toggle-fold`: Toggle the fold at point.
 
 The package also offer extensions:
-
-* **kirigami-jump**: **Ensure that the relevant fold is opened when the cursor moves into folded content.** This integrates Kirigami with Emacs and third-party jump mechanisms so navigation never lands inside hidden text. It adds hooks and advices for subsystems such as xref, imenu, consult, save-place, flymake, evil jumps, bookmarks, grep, org-agenda...
-* **kirigami-outline**: Improvements for `outline-mode`, `outline-minor-mode`, `org-mode`... (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).) When enabled `kirigami-outline-mode`, the package augments behavior related to heading visibility, folded entries, and subtree navigation. These enhancements correct inconsistencies in built-in outline operations and address long-standing bugs in fold visibility and cursor-driven unfolding.
+- The kirigami package also improves `outline-mode`, `outline-minor-mode`, `org-mode`... (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).)
+- **Ensure that the relevant fold is opened when the cursor moves into folded content.** This integrates Kirigami with Emacs and third-party jump mechanisms so navigation never lands inside hidden text. It adds hooks and advices for subsystems such as xref, imenu, consult, save-place, flymake, evil jumps, bookmarks, grep, org-agenda...
 
 If this enhances your workflow, please show your support by **⭐ starring kirigami.el on GitHub** to help more Emacs users discover its benefits.
 
@@ -36,8 +35,8 @@ Here are the features that **kirigami** offers:
   * `hs-minor-mode`
   * `hide-ifdef-mode`
   * `origami-mode`
-* Extension: **kirigami-jump**: Integrates Kirigami with Emacs and third-party packages jump mechanisms so navigation never lands inside hidden text.
-* Extension: **kirigami-outline**: Optional improvements for `outline-mode` and `outline-minor-mode`. (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).)
+* Improve `outline-mode`, `outline-minor-mode`, `org-mode` text folding. (Fixes Emacs bugs such as this one: [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).)
+* Integrates Kirigami with Emacs and third-party packages jump mechanisms so navigation never lands inside hidden text.
 
 ## Installation
 
@@ -56,19 +55,7 @@ To install *kirigami* with `straight.el`:
              :repo "jamescherti/kirigami.el"
              :files (:defaults "extensions/kirigami*.el"))
   :config
-  ;; The kirigami-jump extension integrates Kirigami with Emacs jump mechanisms
-  ;; so navigation never lands inside hidden text. It adds hooks and advices for
-  ;; subsystems such as xref, imenu, consult, save-place, flymake, evil jumps,
-  ;; bookmarks, grep, and org-agenda, creating consistent behavior across all
-  ;; jump related operations.
-  (require 'kirigami-jump)
-  (kirigami-jump-mode)
-
-  (with-eval-after-load 'outline
-    ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
-    ;; related modes such as 'outline-indent-mode' and 'org-mode'.
-    (require 'kirigami-outline)
-    (kirigami-outline-mode)))
+  (kirigami-mode))
 ```
 
 ### Alternative installation: Doom Emacs
@@ -85,19 +72,7 @@ Here is how to install *kirigami* on Doom Emacs:
 2. Add to `~/.doom.d/config.el`:
 ```elisp
 (after! kirigami
-        ;; The kirigami-jump extension integrates Kirigami with Emacs jump
-        ;; mechanisms so navigation never lands inside hidden text. It adds
-        ;; hooks and advices for subsystems such as xref, imenu, consult,
-        ;; save-place, flymake, evil jumps, bookmarks, grep, and org-agenda,
-        ;; creating consistent behavior across all jump related operations.
-        (require 'kirigami-jump)
-        (kirigami-jump-mode)
-
-        (with-eval-after-load 'outline
-          ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
-          ;; related modes such as 'outline-indent-mode' and 'org-mode'.
-          (require 'kirigami-outline)
-          (kirigami-outline-mode)))
+        (kirigami-mode))
 ```
 
 3. Run the `doom sync` command:
