@@ -1,9 +1,9 @@
-;;; kirigami-outline.el --- Enhance outline -*- lexical-binding: t -*-
+;;; kirigami-outline.el --- Optional folding enhancements for outline -*- lexical-binding: t -*-
 
 ;;; Commentary:
 
-;; Optional enhancements for `outline-mode', `outline-minor-mode', and related
-;; modes such as `outline-indent-mode' and `org-mode'.
+;; Optional folding enhancements for `outline-mode', `outline-minor-mode', and
+;; related modes such as `outline-indent-mode' and `org-mode'.
 
 ;;; Code:
 
@@ -114,7 +114,7 @@ with a lower level and close its subtree. Otherwise, close the current subtree."
 Optional enhancements for `outline-mode', `outline-minor-mode', and related
 modes such as `outline-indent-mode' and `org-mode'."
   :global t
-  :lighter " KirigamiOL"
+  :lighter " KirigamiO"
   :group 'kirigami-outline
   (if kirigami-outline-mode
       (advice-add 'outline-show-entry :override #'kirigami-outline--show-entry)

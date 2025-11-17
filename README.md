@@ -54,6 +54,14 @@ To install *kirigami* with `straight.el`:
              :repo "jamescherti/kirigami.el"
              :files (:defaults "extensions/kirigami*.el"))
   :config
+  ;; The kirigami-jump extension integrates Kirigami with Emacs jump mechanisms
+  ;; so navigation never lands inside hidden text. It adds hooks and advices for
+  ;; subsystems such as xref, imenu, consult, save-place, flymake, evil jumps,
+  ;; bookmarks, grep, and org-agenda, creating consistent behavior across all
+  ;; jump related operations.
+  (require 'kirigami-jump)
+  (kirigami-jump-mode)
+
   (with-eval-after-load 'outline
     ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
     ;; related modes such as 'outline-indent-mode' and 'org-mode'.
@@ -75,6 +83,14 @@ Here is how to install *kirigami* on Doom Emacs:
 2. Add to `~/.doom.d/config.el`:
 ```elisp
 (after! kirigami
+        ;; The kirigami-jump extension integrates Kirigami with Emacs jump
+        ;; mechanisms so navigation never lands inside hidden text. It adds
+        ;; hooks and advices for subsystems such as xref, imenu, consult,
+        ;; save-place, flymake, evil jumps, bookmarks, grep, and org-agenda,
+        ;; creating consistent behavior across all jump related operations.
+        (require 'kirigami-jump)
+        (kirigami-jump-mode)
+
         (with-eval-after-load 'outline
           ;; Optional enhancements for 'outline-mode', 'outline-minor-mode', and
           ;; related modes such as 'outline-indent-mode' and 'org-mode'.
