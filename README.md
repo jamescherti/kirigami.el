@@ -180,7 +180,9 @@ Here is an example using the built-in `hs-minor-mode`, which Kirigami supports b
 
 ## Author and License
 
-The *kirigami* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version. Special thanks to the developers of Evil mode. Kirigami builds upon the ideas and code from Evil mode to provide enhanced and unified code folding functionality to all Emacs users.
+The *kirigami* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version.
+
+Special thanks to the developers of Evil mode. Kirigami builds upon the ideas and code from Evil mode to provide enhanced and unified code folding functionality to all Emacs users.
 
 Copyright (C) 2025 James Cherti
 
