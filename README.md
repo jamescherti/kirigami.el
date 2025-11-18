@@ -175,6 +175,16 @@ Here is an example using the built-in `hs-minor-mode`, which Kirigami supports b
  kirigami-fold-list)
 ```
 
+## Frequenlty asked questions
+
+### What does the Kirigami word mean?
+
+Kirigami is a form of Origami, the Japanese art that transforms a flat sheet of paper into a figure through controlled folds. In kirigami, the sheet is both folded and cut to form a three-dimensional structure that rises from the surface.
+
+Kirigami and code folding in Emacs share a structural analogy based on selective concealment and controlled revelation. In kirigami, cuts and folds create regions that can be collapsed or expanded, revealing depth or hiding detail depending on how the paper is manipulated.
+
+Code folding in Emacs operates on a similar principle. Blocks of text remain present in the buffer, but their visibility is adjusted by folding or unfolding sections.
+
 ## Author and License
 
 The *kirigami* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version. Special thanks to the developers of Evil mode. Kirigami builds upon the idea and function from Evil mode to provide enhanced and unified code folding functionality to all Emacs users.
