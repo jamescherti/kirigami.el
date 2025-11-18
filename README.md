@@ -187,7 +187,6 @@ This program is free software: you can redistribute it and/or modify it under th
 
 - [kirigami.el @GitHub](https://github.com/jamescherti/kirigami.el)
 
-
 Other Emacs packages by the same author:
 - [minimal-emacs.d](https://github.com/jamescherti/minimal-emacs.d): This repository hosts a minimal Emacs configuration designed to serve as a foundation for your vanilla Emacs setup and provide a solid base for an enhanced Emacs experience.
 - [compile-angel.el](https://github.com/jamescherti/compile-angel.el): **Speed up Emacs!** This package guarantees that all .el files are both byte-compiled and native-compiled, which significantly speeds up Emacs.
