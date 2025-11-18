@@ -99,6 +99,14 @@ specific reason to disable these enhancements."
      :open       ,(lambda () (call-interactively 'vdiff-open-fold))
      :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
      :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
+    ((treesit-fold-mode)
+     :invisible-p  ,(lambda () (invisible-p (point)))
+     :open-all   treesit-fold-open-all
+     :close-all  treesit-fold-close-all
+     :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
+     :open       treesit-fold-open
+     :open-rec   treesit-fold-open-recursively
+     :close      treesit-fold-close)
     ((hs-minor-mode)
      :invisible-p  ,(lambda () (eq (get-char-property (point) 'invisible) 'hs))
      :open-all   hs-show-all
