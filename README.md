@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://raw.githubusercontent.com/jamescherti/kirigami.el/main/.images/made-for-gnu-emacs.svg)
 
-The **kirigami** package offers a unified interface for text folding across a diverse set of major and minor modes in Emacs, including `outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `origami-mode`, and `treesit-fold-mode`.
+The **kirigami** package offers a unified interface for text folding across a diverse set of major and minor modes in Emacs, including `outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `origami-mode`, `yafolding-mode`, and `treesit-fold-mode`.
 
 With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable folding experience. The available commands include:
 
