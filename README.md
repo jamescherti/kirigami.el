@@ -142,9 +142,6 @@ The core behavior is driven by `kirigami-fold-list`, a customizable list that as
 
 Properties include:
 
-* `:invisible-p`
-  Predicate indicating whether text at point is invisible.
-
 * `:open-all`
   Function to open every fold in the current buffer.
 
@@ -169,7 +166,6 @@ Here is an example using the built-in `hs-minor-mode`, which Kirigami supports b
 ```elisp
 (push
  '((hs-minor-mode)
-   :invisible-p (lambda () (eq (get-char-property (point) 'invisible) 'hs))
    :open-all    hs-show-all
    :close-all   hs-hide-all
    :toggle      hs-toggle-hiding

@@ -84,7 +84,6 @@ specific reason to disable these enhancements."
 
 (defvar kirigami-fold-list
   `(((vdiff-mode)
-     :invisible-p  ,(lambda () (invisible-p (point)))
      :open-all   vdiff-open-all-folds
      :close-all  vdiff-close-all-folds
      :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
@@ -92,7 +91,6 @@ specific reason to disable these enhancements."
      :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
      :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
     ((vdiff-3way-mode)
-     :invisible-p  ,(lambda () (invisible-p (point)))
      :open-all   vdiff-open-all-folds
      :close-all  vdiff-close-all-folds
      :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
@@ -100,7 +98,6 @@ specific reason to disable these enhancements."
      :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
      :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
     ((treesit-fold-mode)
-     :invisible-p  ,(lambda () (invisible-p (point)))
      :open-all   treesit-fold-open-all
      :close-all  treesit-fold-close-all
      :toggle     treesit-fold-toggle
@@ -108,7 +105,6 @@ specific reason to disable these enhancements."
      :open-rec   treesit-fold-open-recursively
      :close      treesit-fold-close)
     ((hs-minor-mode)
-     :invisible-p  ,(lambda () (eq (get-char-property (point) 'invisible) 'hs))
      :open-all   hs-show-all
      :close-all  hs-hide-all
      :toggle     hs-toggle-hiding
@@ -116,7 +112,6 @@ specific reason to disable these enhancements."
      :open-rec   nil
      :close      hs-hide-block)
     ((hide-ifdef-mode)
-     :invisible-p  ,(lambda () (invisible-p (point)))
      :open-all   show-ifdefs
      :close-all  hide-ifdefs
      :toggle     nil
@@ -127,16 +122,6 @@ specific reason to disable these enhancements."
       outline-minor-mode
       org-mode
       markdown-mode)
-     :invisible-p  ,(lambda ()
-                      (cond ((and (bound-and-true-p outline-minor-mode)
-                                  (fboundp 'outline-invisible-p))
-                             (funcall 'outline-invisible-p (point)))
-
-                            ((and (derived-mode-p 'org-mode)
-                                  (fboundp 'org-invisible-p))
-                             (funcall 'org-invisible-p (point)))
-
-                            (t (invisible-p (point)))))
      :open-all   show-all
      :close-all  ,(lambda ()
                     (with-no-warnings (hide-sublevels 1)))
@@ -167,8 +152,15 @@ specific reason to disable these enhancements."
          (t
           (with-no-warnings
             (hide-subtree)))))
+     ;; TODO support vimish-fold-mode
+     ;; ((vimish-fold-mode)
+     ;;  :open-all   ,(lambda () (call-interactively 'vimish-fold-unfold-all))
+     ;;  :close-all  ,(lambda () (call-interactively 'vimish-fold-refold-all))
+     ;;  :toggle     ,(lambda () (call-interactively 'vimish-fold-toggle))
+     ;;  :open       ,(lambda () (call-interactively 'vimish-fold-unfold))
+     ;;  :open-rec   ,(lambda () (call-interactively 'vimish-fold-unfold))
+     ;;  :close      ,(lambda () (call-interactively 'vimish-fold-refold)))
      ((origami-mode)
-      :invisible-p  ,(lambda () (invisible-p (point)))
       :open-all   ,(lambda () (when (fboundp 'origami-open-all-nodes)
                                 (origami-open-all-nodes (current-buffer))))
       :close-all  ,(lambda () (when (fboundp 'origami-close-all-nodes)
@@ -196,7 +188,6 @@ mode and the latter is a major.
 PROPERTIES specifies possible folding actions and the functions to be
 applied in the event of a match on one (or more) of the MODES; the
 supported properties are:
-  - `:invisible-p': Non-nil if the character after (point) is invisible.
   - `:open-all': Open all folds.
   - `:close-all': Close all folds.
   - `:toggle': Toggle the display of the fold at point.
@@ -269,12 +260,20 @@ would ignore `:close-all' actions and invoke the provided functions on
 
 (defun kirigami--outline-heading-folded-p ()
   "Return non-nil if the body following the current heading is folded."
-  (if (and (fboundp 'outline-back-to-heading)
-           (fboundp 'outline-invisible-p))
+  (if (fboundp 'outline-back-to-heading)
       (save-excursion
         (outline-back-to-heading)
         (end-of-line)
-        (outline-invisible-p (point)))
+        ;; Is it invisible?
+        (cond ((and (bound-and-true-p outline-minor-mode)
+                    (fboundp 'outline-invisible-p))
+               (funcall 'outline-invisible-p (point)))
+
+              ((and (derived-mode-p 'org-mode)
+                    (fboundp 'org-invisible-p))
+               (funcall 'org-invisible-p (point)))
+
+              (t (invisible-p (point)))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--outline-legacy-show-entry ()
@@ -419,11 +418,6 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
     (kirigami-close-folds)
     (goto-char point)
     (kirigami-open-fold)))
-
-;;;###autoload
-(defun kirigami-invisible-p ()
-  "Return t if text is invisible."
-  (kirigami-fold-action kirigami-fold-list :invisible-p))
 
 (provide 'kirigami)
 ;;; kirigami.el ends here
