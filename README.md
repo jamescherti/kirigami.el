@@ -49,8 +49,7 @@ To install *kirigami* with `straight.el`:
   :straight (kirigami
              :type git
              :host github
-             :repo "jamescherti/kirigami.el"
-             :files (:defaults "extensions/kirigami*.el")))
+             :repo "jamescherti/kirigami.el"))
 ```
 
 ### Alternative installation: Doom Emacs
