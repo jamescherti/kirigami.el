@@ -1,4 +1,4 @@
-# kirigami.el - A unified interface for text folding across a diverse set of Emacs modes
+# kirigami.el - A Unified Interface for Text Folding across a diverse set of Emacs modes (`outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `vdiff-mode`, `hs-minor-mode`, `treesit-fold-mode`...)
 ![Build Status](https://github.com/jamescherti/kirigami.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://raw.githubusercontent.com/jamescherti/kirigami.el/main/.images/made-for-gnu-emacs.svg)
