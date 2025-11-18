@@ -126,6 +126,13 @@ specific reason to disable these enhancements."
      :open       yafolding-show-element
      :open-rec   yafolding-show-element
      :close      yafolding-hide-element)
+    ((outline-indent-mode)
+     :open-all   outline-indent-open-folds
+     :close-all  outline-indent-close-folds
+     :toggle     outline-indent-toggle-fold
+     :open       outline-indent-open-fold
+     :open-rec   outline-indent-open-fold-rec
+     :close      outline-indent-close-fold)
     ((outline-mode
       outline-minor-mode
       org-mode
