@@ -1,4 +1,4 @@
-# kirigami.el - Enhance text folding across a diverse set of Emacs major and minor modes
+# kirigami.el - A unified interface for text folding across a diverse set of Emacs modes
 ![Build Status](https://github.com/jamescherti/kirigami.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://raw.githubusercontent.com/jamescherti/kirigami.el/main/.images/made-for-gnu-emacs.svg)
