@@ -44,7 +44,7 @@ To install *kirigami* with `straight.el`:
 
 1. It if hasn't already been done, [add the straight.el bootstrap code](https://github.com/radian-software/straight.el?tab=readme-ov-file#getting-started) to your init file.
 2. Add the following code to the Emacs init file:
-```emacs-lisp
+```elisp
 (use-package kirigami
   :ensure t
   :straight (kirigami
@@ -57,7 +57,7 @@ To install *kirigami* with `straight.el`:
 
 To install *kirigami* with `use-package` and `:vc` (Emacs >= 30):
 
-``` emacs-lisp
+```elisp
 (use-package kirigami
   :ensure t
   :vc (:url "https://github.com/jamescherti/kirigami.el"
