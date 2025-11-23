@@ -163,7 +163,8 @@ specific reason to disable these enhancements."
       markdown-mode)
      :open-all   show-all
      :close-all  ,(lambda ()
-                    (with-no-warnings (hide-sublevels 1)))
+                    (when (fboundp 'hide-sublevels)
+                      (hide-sublevels 1)))
      :toggle     outline-toggle-children
      :open       ,(lambda ()
                     (cond
@@ -176,7 +177,8 @@ specific reason to disable these enhancements."
                       (kirigami--outline-show-entry))
 
                      (t
-                      (with-no-warnings
+                      (when (and (fboundp 'show-entry)
+                                 (fboundp 'show-children))
                         (ignore-errors
                           (show-entry)
                           (show-children))))))
@@ -189,7 +191,7 @@ specific reason to disable these enhancements."
           (kirigami--outline-hide-subtree))
 
          (t
-          (with-no-warnings
+          (when (fboundp 'hide-subtree)
             (hide-subtree))))))
     ;; TODO support vimish-fold-mode
     ;; ((vimish-fold-mode)
