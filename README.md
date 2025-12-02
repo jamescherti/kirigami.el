@@ -40,11 +40,11 @@ The kirigami package supports Emacs version 26.3 and above.
 
 ## Installation
 
-To install **easysession** from MELPA:
+To install **kirigami** from MELPA:
 
 1. If you haven't already done so, [add MELPA repository to your Emacs configuration](https://melpa.org/#/getting-started).
 
-2. Add the following code to your Emacs init file to install **easysession** from MELPA:
+2. Add the following code to your Emacs init file to install **kirigami** from MELPA:
 ```elisp
 (use-package kirigami
   :ensure t)
