@@ -187,7 +187,8 @@ specific reason to disable these enhancements."
     ((outline-mode
       outline-minor-mode
       org-mode
-      markdown-mode)
+      markdown-mode
+      gfm-mode)
      :open-all   show-all
      :close-all  ,(lambda ()
                     (when (fboundp 'hide-sublevels)
