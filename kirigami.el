@@ -109,7 +109,7 @@ specific reason to disable these enhancements."
   :group 'kirigami)
 
 (defvar kirigami-fold-list
-  `(((outline-indent-mode)
+  `(((outline-indent-minor-mode)
      :open-all   outline-indent-open-folds
      :close-all  outline-indent-close-folds
      :toggle     outline-indent-toggle-fold
