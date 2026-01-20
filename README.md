@@ -34,7 +34,7 @@ Here are the features that **kirigami** offers:
   * `hide-ifdef-mode`
   * `origami-mode`
   * `treesit-fold-mode`
-* In addition to unified interface, the kirigami package enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
+* In addition to unified interface, the kirigami package enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
 
 The kirigami package supports Emacs version 26.3 and above.
 

@@ -109,26 +109,25 @@ specific reason to disable these enhancements."
   :group 'kirigami)
 
 (defvar kirigami-fold-list
-  `(
-    ;; ((outline-indent-minor-mode)
-    ;;  :open-all   ,(lambda ()
-    ;;                 (when (fboundp 'outline-indent-open-folds)
-    ;;                   (call-interactively 'outline-indent-open-folds)))
-    ;;  :close-all  ,(lambda ()
-    ;;                 (when (fboundp 'outline-indent-close-folds)
-    ;;                   (call-interactively 'outline-indent-close-folds)))
-    ;;  :toggle     ,(lambda ()
-    ;;                 (when (fboundp 'outline-indent-toggle-fold)
-    ;;                   (call-interactively 'outline-indent-toggle-fold)))
-    ;;  :open       ,(lambda ()
-    ;;                 (when (fboundp 'outline-indent-open-fold)
-    ;;                   (call-interactively 'outline-indent-open-fold)))
-    ;;  :open-rec   ,(lambda ()
-    ;;                 (when (fboundp 'outline-indent-open-fold-rec)
-    ;;                   (call-interactively 'outline-indent-open-fold-rec)))
-    ;;  :close      ,(lambda ()
-    ;;                 (when (fboundp 'outline-indent-close-fold)
-    ;;                   (call-interactively 'outline-indent-close-fold))))
+  `(((outline-indent-minor-mode)
+     :open-all   ,(lambda ()
+                    (when (fboundp 'outline-indent-open-folds)
+                      (call-interactively 'outline-indent-open-folds)))
+     :close-all  ,(lambda ()
+                    (when (fboundp 'outline-indent-close-folds)
+                      (call-interactively 'outline-indent-close-folds)))
+     :toggle     ,(lambda ()
+                    (when (fboundp 'outline-indent-toggle-fold)
+                      (call-interactively 'outline-indent-toggle-fold)))
+     :open       ,(lambda ()
+                    (when (fboundp 'outline-indent-open-fold)
+                      (call-interactively 'outline-indent-open-fold)))
+     :open-rec   ,(lambda ()
+                    (when (fboundp 'outline-indent-open-fold-rec)
+                      (call-interactively 'outline-indent-open-fold-rec)))
+     :close      ,(lambda ()
+                    (when (fboundp 'outline-indent-close-fold)
+                      (call-interactively 'outline-indent-close-fold))))
     ((vdiff-mode)
      :open-all   vdiff-open-all-folds
      :close-all  vdiff-close-all-folds
@@ -416,25 +415,51 @@ the entry is fully visible."
     (error "Required outline functions are undefined")))
 
 (defun kirigami--outline-hide-subtree ()
-  "Close the previous lower-level heading if current heading is folded or empty.
-If the current heading is folded or empty, move to the previous heading
-with a lower level and close its subtree. Otherwise, close the current subtree."
+  "Close the current heading's subtree in a robust manner.
+
+If the current heading is folded or contains no content, move to the previous
+heading with a higher level and close its subtree.
+
+Otherwise, close the current subtree. Ensures that folded headings remain
+visible in the window after hiding."
   (if (and (fboundp 'outline-back-to-heading)
            (fboundp 'outline-end-of-subtree)
            (fboundp 'outline-up-heading)
            (fboundp 'outline-on-heading-p))
       (save-excursion
+        ;; Move to the current heading; error if before the first heading
         (outline-back-to-heading)
-        (if (or (kirigami--outline-heading-folded-p)
-                ;; Fold without any content
-                (let ((start (save-excursion (end-of-line) (point)))
-                      (end (save-excursion (outline-end-of-subtree) (point))))
-                  (= start end)))
-            (progn
-              (outline-up-heading 1 t)
-              (when (outline-on-heading-p)
-                (kirigami--outline-legacy-hide-subtree)))
-          (kirigami--outline-legacy-hide-subtree)))
+
+        (let ((heading-point (save-excursion
+                               (condition-case nil
+                                   (progn
+                                     (outline-up-heading 1 t)
+                                     (point))
+                                 (error
+                                  nil)))))
+          ;; If the current heading is folded, or if it contains no content,
+          ;; move to the previous higher-level heading.
+          (when (or (kirigami--outline-heading-folded-p)  ; Folded?
+                    ;; Or fold without any content
+                    (let ((start (save-excursion (end-of-line)
+                                                 (point)))
+                          (end (save-excursion (outline-end-of-subtree)
+                                               (point))))
+                      (= start end)))
+            ;; Try to move up to previous higher-level heading
+            (outline-up-heading 1 t)
+            (setq heading-point (point)))
+
+          (when (outline-on-heading-p)
+            (kirigami--outline-legacy-hide-subtree))
+
+          ;; Ensure folded headings remain visible after hiding subtrees. Fixes
+          ;; a bug in outline and Evil where headings could scroll out of view
+          ;; when their subtrees were folded.
+          ;; TODO Send a patch to Emacs and/or Evil
+          (when (and heading-point
+                     (< heading-point (window-start)))
+            (set-window-start (selected-window) heading-point t))))
     (error "Required outline functions are undefined")))
 
 ;;; Functions: open/close folds
