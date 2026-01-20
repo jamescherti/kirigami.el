@@ -452,13 +452,7 @@ visible in the window after hiding."
         ;; Move to the current heading; error if before the first heading
         (outline-back-to-heading)
 
-        (let ((heading-point (save-excursion
-                               (condition-case nil
-                                   (progn
-                                     (outline-up-heading 1 t)
-                                     (point))
-                                 (error
-                                  nil)))))
+        (let ((heading-point (point)))
           ;; If the current heading is folded, or if it contains no content,
           ;; move to the previous higher-level heading.
           (when (or (kirigami--outline-heading-folded-p)  ; Folded?
