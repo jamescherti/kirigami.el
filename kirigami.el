@@ -202,9 +202,10 @@ specific reason to disable these enhancements."
       markdown-mode
       gfm-mode)
      :open-all   show-all
-     :close-all  ,(lambda ()
-                    (when (fboundp 'hide-sublevels)
-                      (hide-sublevels 1)))
+     :close-all kirigami--outline-close-all
+     ;; ,(lambda ()
+     ;;    (when (functionp #'kirigami--outline-close-all)
+     ;;      (kirigami--outline-close-all)))
      :toggle     outline-toggle-children
      :open       ,(lambda ()
                     (cond
@@ -222,17 +223,16 @@ specific reason to disable these enhancements."
                         (ignore-errors
                           (show-entry)
                           (show-children))))))
-     :open-rec   show-subtree
-     :close      ;; hide-subtree
-     ,(lambda ()
-        (cond
-         ((and kirigami-enhance-outline
-               (fboundp 'kirigami--outline-hide-subtree))
-          (kirigami--outline-hide-subtree))
+     :open-rec show-subtree
+     :close ,(lambda ()
+               (cond
+                ((and kirigami-enhance-outline
+                      (fboundp 'kirigami--outline-hide-subtree))
+                 (kirigami--outline-hide-subtree))
 
-         (t
-          (when (fboundp 'hide-subtree)
-            (hide-subtree))))))
+                (t
+                 (when (fboundp 'hide-subtree)
+                   (hide-subtree))))))
     ;; TODO support vimish-fold-mode
     ;; ((vimish-fold-mode)
     ;;  :open-all   ,(lambda () (call-interactively 'vimish-fold-unfold-all))
@@ -315,7 +315,7 @@ would ignore `:close-all' actions and invoke the provided functions on
           (let* ((actions (cdar list))
                  (fn (plist-get actions action)))
             (when fn
-              (with-demoted-errors "Error: %S" (funcall fn))))
+              fn))
         (kirigami-fold--action-get-func (cdr list) action ignore-errors)))))
 
 (defun kirigami-fold-action (list action &optional ignore-errors)
@@ -374,6 +374,28 @@ This is the Emacs version of `outline-hide-subtree'."
           (mouse-set-point event))
         (outline-flag-subtree t))
     (error "Required outline functions are undefined")))
+
+(defun kirigami--outline-close-all ()
+  "Close all folds and ensure the first heading remains visible."
+  (when (fboundp 'hide-sublevels)
+    (hide-sublevels 1)
+
+    (when (fboundp 'outline-back-to-heading)
+      (let ((heading-point (save-excursion
+                             (condition-case nil
+                                 (progn
+                                   (outline-back-to-heading)
+                                   (point))
+                               (error
+                                nil)))))
+        ;; Ensure folded headings remain visible after
+        ;; hiding subtrees. Fixes a bug in outline and Evil
+        ;; where headings could scroll out of view when
+        ;; their subtrees were folded. TODO Send a patch to
+        ;; Emacs and/or Evil
+        (when (and heading-point
+                   (< heading-point (window-start)))
+          (set-window-start (selected-window) heading-point t))))))
 
 (defun kirigami--outline-show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
