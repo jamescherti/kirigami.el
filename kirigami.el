@@ -202,10 +202,7 @@ specific reason to disable these enhancements."
       markdown-mode
       gfm-mode)
      :open-all   show-all
-     :close-all kirigami--outline-close-all
-     ;; ,(lambda ()
-     ;;    (when (functionp #'kirigami--outline-close-all)
-     ;;      (kirigami--outline-close-all)))
+     :close-all  kirigami--outline-close-all
      :toggle     outline-toggle-children
      :open       ,(lambda ()
                     (cond
@@ -380,12 +377,15 @@ This is the Emacs version of `outline-hide-subtree'."
   (when (fboundp 'hide-sublevels)
     (hide-sublevels 1)
 
-    (when (fboundp 'outline-back-to-heading)
+    (when (and (fboundp 'outline-on-heading-p)
+               (fboundp 'outline-back-to-heading))
       (let ((heading-point (save-excursion
                              (condition-case nil
                                  (progn
-                                   (outline-back-to-heading)
-                                   (point))
+                                   (goto-char (window-start))
+                                   (beginning-of-visual-line)
+                                   (when (outline-on-heading-p)
+                                     (point)))
                                (error
                                 nil)))))
         ;; Ensure folded headings remain visible after
