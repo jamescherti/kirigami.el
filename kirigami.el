@@ -384,15 +384,14 @@ This is the Emacs version of `outline-hide-subtree'."
                                  (progn
                                    (goto-char (window-start))
                                    (beginning-of-visual-line)
-                                   (when (outline-on-heading-p)
-                                     (point)))
+                                   (if (outline-on-heading-p)
+                                       (point)
+                                     (outline-back-to-heading t)))
                                (error
                                 nil)))))
-        ;; Ensure folded headings remain visible after
-        ;; hiding subtrees. Fixes a bug in outline and Evil
-        ;; where headings could scroll out of view when
-        ;; their subtrees were folded. TODO Send a patch to
-        ;; Emacs and/or Evil
+        ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
+        ;; bug in outline and Evil where headings could scroll out of view when
+        ;; their subtrees were folded. TODO Send a patch to Emacs and/or Evil
         (when (and heading-point
                    (< heading-point (window-start)))
           (set-window-start (selected-window) heading-point t))))))
