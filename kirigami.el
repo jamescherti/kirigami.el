@@ -163,13 +163,17 @@ specific reason to disable these enhancements."
      :open-all   hs-show-all
      :close-all  hs-hide-all
      :toggle     hs-toggle-hiding
-     :open       hs-show-block
+     :open       ,(lambda ()
+                    ;; Restore the column because `hs-show-block' may move point
+                    ;; backward
+                    (let ((column (current-column)))
+                      (when (fboundp 'hs-show-block)
+                        (hs-show-block)
+                        (move-to-column column))))
      :open-rec   nil
      :close      ,(lambda ()
-                    ;; `hs-hide-block' may move point backward due to overlay
-                    ;; insertion and buffer modification, so the current column
-                    ;; is restored to keep the cursor at the same visual
-                    ;; position after hiding the block.
+                    ;; Restore the column because `hs-hide-block' may move point
+                    ;; backward
                     (let ((column (current-column)))
                       (when (fboundp 'hs-hide-block)
                         (hs-hide-block)
