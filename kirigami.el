@@ -161,23 +161,27 @@ specific reason to disable these enhancements."
      :close      treesit-fold-close)
     ((hs-minor-mode)
      :open-all   hs-show-all
-     :close-all  hs-hide-all
-     :toggle      ,(lambda ()
-                     ;; Restore the column because `hs-toggle-hiding' may move
-                     ;; point backward
-                     ;; TODO: Emacs patch?
-                     (kirigami--call-preserve-column 'hs-toggle-hiding))
-     :open       ,(lambda ()
-                    ;; Restore the column because `hs-show-block' may move point
-                    ;; backward
+     :close-all  ,(lambda ()
+                    ;; Restore the column because `hs-hide-all' may move
+                    ;; point backward
                     ;; TODO: Emacs patch?
-                    (kirigami--call-preserve-column 'hs-show-block))
-     :open-rec   nil
-     :close      ,(lambda ()
-                    ;; Restore the column because `hs-hide-block' may move point
-                    ;; backward
+                    (kirigami--call-preserve-column 'hs-hide-all))
+     :toggle     ,(lambda ()
+                    ;; Restore the column because `hs-toggle-hiding' may move
+                    ;; point backward
                     ;; TODO: Emacs patch?
-                    (kirigami--call-preserve-column 'hs-hide-block)))
+                    (kirigami--call-preserve-column 'hs-toggle-hiding))
+     :open      ,(lambda ()
+                   ;; Restore the column because `hs-show-block' may move point
+                   ;; backward
+                   ;; TODO: Emacs patch?
+                   (kirigami--call-preserve-column 'hs-show-block))
+     :open-rec  nil
+     :close     ,(lambda ()
+                   ;; Restore the column because `hs-hide-block' may move point
+                   ;; backward
+                   ;; TODO: Emacs patch?
+                   (kirigami--call-preserve-column 'hs-hide-block)))
     ((hide-ifdef-mode)
      :open-all   show-ifdefs
      :close-all  hide-ifdefs
