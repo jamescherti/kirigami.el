@@ -162,22 +162,22 @@ specific reason to disable these enhancements."
     ((hs-minor-mode)
      :open-all   hs-show-all
      :close-all  hs-hide-all
-     :toggle     hs-toggle-hiding
+     :toggle      ,(lambda ()
+                     ;; Restore the column because `hs-toggle-hiding' may move
+                     ;; point backward
+                     ;; TODO: Emacs patch?
+                     (kirigami--call-preserve-column 'hs-toggle-hiding))
      :open       ,(lambda ()
                     ;; Restore the column because `hs-show-block' may move point
                     ;; backward
-                    (let ((column (current-column)))
-                      (when (fboundp 'hs-show-block)
-                        (hs-show-block)
-                        (move-to-column column))))
+                    ;; TODO: Emacs patch?
+                    (kirigami--call-preserve-column 'hs-show-block))
      :open-rec   nil
      :close      ,(lambda ()
                     ;; Restore the column because `hs-hide-block' may move point
                     ;; backward
-                    (let ((column (current-column)))
-                      (when (fboundp 'hs-hide-block)
-                        (hs-hide-block)
-                        (move-to-column column)))))
+                    ;; TODO: Emacs patch?
+                    (kirigami--call-preserve-column 'hs-hide-block)))
     ((hide-ifdef-mode)
      :open-all   show-ifdefs
      :close-all  hide-ifdefs
@@ -303,6 +303,17 @@ would ignore `:close-all' actions and invoke the provided functions on
 ;;      (when kirigami-verbose
 ;;        (kirigami--message
 ;;         (concat ,(car args)) ,@(cdr args)))))
+
+(defun kirigami--call-preserve-column (fn)
+  "Call FN and restore point to the original column when possible."
+  (let ((column (current-column)))
+    (when (fboundp fn)
+      (funcall fn)
+      (let ((line-size (- (line-end-position)
+                          (line-beginning-position))))
+        (move-to-column (if (< column line-size)
+                            column
+                          line-size))))))
 
 (defun kirigami--mode-p (modes)
   "Check if any symbol in MODES matches the current buffer's modes."
