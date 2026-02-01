@@ -440,9 +440,10 @@ the entry is fully visible."
            (fboundp 'outline-show-children))
       (condition-case nil
           (let ((on-invisible-heading (save-excursion
-                                        (beginning-of-line)
                                         (when (outline-on-heading-p t)
                                           (outline-invisible-p)))))
+            ;; TODO select when (use-region-p)
+
             ;; Repeatedly reveal children and body until the entry is no longer
             ;; folded
             (progn
