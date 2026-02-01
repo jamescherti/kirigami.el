@@ -439,9 +439,11 @@ the entry is fully visible."
            (fboundp 'outline-back-to-heading)
            (fboundp 'outline-show-children))
       (condition-case nil
-          (let ((on-invisible-heading (save-excursion
-                                        (when (outline-on-heading-p t)
-                                          (outline-invisible-p)))))
+          (let ((on-invisible-heading (when (outline-on-heading-p t)
+                                        (outline-invisible-p)))
+                (on-visible-heading (save-excursion
+                                      (beginning-of-line)
+                                      (outline-on-heading-p))))
             ;; TODO select when (use-region-p)
 
             ;; Repeatedly reveal children and body until the entry is no longer
@@ -456,7 +458,7 @@ the entry is fully visible."
             ;; If the header was previously hidden, hide the subtree to collapse
             ;; it. Otherwise, leave the fold open. This allows the user to
             ;; decide whether to expand the content under the cursor.
-            (when on-invisible-heading
+            (when (and on-invisible-heading (not on-visible-heading))
               (kirigami--outline-legacy-hide-subtree)))
         ;; `outline-back-to-heading' issue
         (outline-before-first-heading
