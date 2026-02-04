@@ -18,7 +18,9 @@ With Kirigami, folding key bindings only need to be configured **once**. After t
 
 If **kirigami** enhances your workflow, please show your support by **⭐ starring kirigami.el on GitHub** to help more Emacs users discover its benefits.
 
-(In addition to unified interface for opening and closing folds, the **kirigami** package enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. When **kirigami** closes outline folds, it preserves the visibility of folded headings in the window.)
+In addition to unified interface for opening and closing folds, the **kirigami** package:
+- **Visual Stability on Fold Opening and Closing:** Preserves the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start. This Kirigami enhancement avoids the disruptive window jump or forced re-centering commonly observed during bulk folding operations.
+- **Enhances outline:** Enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. When **kirigami** closes outline folds, it preserves the visibility of folded headings in the window.)
 
 ## Features
 
