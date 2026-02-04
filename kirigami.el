@@ -434,36 +434,61 @@ Repeatedly reveal children and body until the entry is no longer folded.
 After the loop, calls `kirigami--outline-legacy-show-entry' once more to ensure
 the entry is fully visible."
   (interactive)
-  (if (and (fboundp 'outline-on-heading-p)
-           (fboundp 'outline-invisible-p)
-           (fboundp 'outline-back-to-heading)
-           (fboundp 'outline-show-children))
-      (condition-case nil
-          (let ((on-invisible-heading (when (outline-on-heading-p t)
-                                        (outline-invisible-p)))
-                (on-visible-heading (save-excursion
-                                      (beginning-of-line)
-                                      (outline-on-heading-p))))
-            ;; TODO select when (use-region-p)
+  (when (not (and (fboundp 'outline-on-heading-p)
+                  (fboundp 'outline-invisible-p)
+                  (fboundp 'outline-back-to-heading)
+                  (fboundp 'outline-show-children)
+                  (fboundp 'outline-up-heading)
+                  (fboundp 'outline-show-children)))
+    (error "Required outline functions are undefined"))
 
-            ;; Repeatedly reveal children and body until the entry is no longer
-            ;; folded
-            (progn
-              (while (kirigami--outline-heading-folded-p)
-                (save-excursion
-                  (outline-back-to-heading)
-                  (outline-show-children)
-                  (kirigami--outline-legacy-show-entry))))
+  (when (and (fboundp 'outline-on-heading-p)
+             (fboundp 'outline-invisible-p)
+             (fboundp 'outline-back-to-heading)
+             (fboundp 'outline-show-children)
+             (fboundp 'outline-up-heading)
+             (fboundp 'outline-show-children))
+    ;; Workaround for an outline-mode limitation: when jumping via imenu or
+    ;; search, sibling headings above the current one and at the same level
+    ;; often remain hidden. This ensures all sub-items at the current level are
+    ;; revealed, preventing the 'isolated item' effect.
+    (save-excursion
+      ;; Climbing as long as a parent heading exists
+      (catch 'done
+        (while (not (bobp))
+          (condition-case nil
+              (progn (outline-up-heading 1 t))
+            (error
+             (throw 'done t)))
 
-            ;; If the header was previously hidden, hide the subtree to collapse
-            ;; it. Otherwise, leave the fold open. This allows the user to
-            ;; decide whether to expand the content under the cursor.
-            (when (and on-invisible-heading (not on-visible-heading))
-              (kirigami--outline-legacy-hide-subtree)))
-        ;; `outline-back-to-heading' issue
-        (outline-before-first-heading
-         nil))
-    (error "Required outline functions are undefined")))
+          (outline-show-children))))
+
+    ;; Repeatedly reveal children and body until the entry is no longer folded
+    (condition-case nil
+        (let ((on-invisible-heading (when (outline-on-heading-p t)
+                                      (outline-invisible-p)))
+              (on-visible-heading (save-excursion
+                                    (beginning-of-line)
+                                    (outline-on-heading-p))))
+          ;; TODO select when (use-region-p)
+
+          ;; Repeatedly reveal children and body until the entry is no longer
+          ;; folded
+          (progn
+            (while (kirigami--outline-heading-folded-p)
+              (save-excursion
+                (outline-back-to-heading)
+                (outline-show-children)
+                (kirigami--outline-legacy-show-entry))))
+
+          ;; If the header was previously hidden, hide the subtree to collapse
+          ;; it. Otherwise, leave the fold open. This allows the user to
+          ;; decide whether to expand the content under the cursor.
+          (when (and on-invisible-heading (not on-visible-heading))
+            (kirigami--outline-legacy-hide-subtree)))
+      ;; `outline-back-to-heading' issue
+      (outline-before-first-heading
+       nil))))
 
 (defun kirigami--outline-hide-subtree ()
   "Close the current heading's subtree in a robust manner.
