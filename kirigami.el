@@ -652,14 +652,24 @@ See also `kirigami-close-folds'."
   "Close fold at point.
 See also `kirigami-open-fold'."
   (interactive)
-  (kirigami-fold-action kirigami-fold-list :close))
+  (if kirigami-preserve-visual-position
+      (kirigami--save-window-hscroll
+        (kirigami--save-window-start
+          (save-excursion
+            (kirigami-fold-action kirigami-fold-list :close))))
+    (kirigami-fold-action kirigami-fold-list :close)))
 
 ;;;###autoload
 (defun kirigami-toggle-fold ()
   "Open or close a fold under point.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (kirigami-fold-action kirigami-fold-list :toggle))
+  (if kirigami-preserve-visual-position
+      (kirigami--save-window-hscroll
+        (kirigami--save-window-start
+          (save-excursion
+            (kirigami-fold-action kirigami-fold-list :toggle))))
+    (kirigami-fold-action kirigami-fold-list :toggle)))
 
 ;;;###autoload
 (defun kirigami-close-folds ()
