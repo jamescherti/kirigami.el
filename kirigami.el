@@ -597,59 +597,61 @@ cursor."
   (declare (indent 0) (debug t))
   (let ((window (make-symbol "window"))
         (buffer (make-symbol "buffer"))
-        (restore-window-settings-p (make-symbol "restore-window-settings-p"))
+        (should-restore (make-symbol "should-restore"))
         (lines-before-cursor (make-symbol "lines-before-cursor")))
-    `(let* ((,window (selected-window))
-            (,buffer (window-buffer ,window))
-            (,restore-window-settings-p (eq ,buffer
-                                            (current-buffer)))
-            (,lines-before-cursor nil))
-       (when ,restore-window-settings-p
-         (with-current-buffer ,buffer
-           (setq ,lines-before-cursor (count-screen-lines
-                                       (save-excursion
-                                         (goto-char (window-start))
-                                         (beginning-of-visual-line)
-                                         (point))
-                                       (save-excursion
-                                         (beginning-of-visual-line)
-                                         (point))
-                                       nil
-                                       ,window))))
-       (unwind-protect
-           (progn ,@body)
-         (when ,restore-window-settings-p
-           (set-window-start ,window
-                             ;; Dotimes and (line-move-visual -1) is more accurate
-                             ;; than (line-move-visual N).
-                             (save-excursion
-                               (dotimes (_ ,lines-before-cursor)
-                                 (condition-case nil
-                                     (let ((line-move-visual t)
-                                           (line-move-ignore-invisible t))
-                                       (line-move -1))
-                                   (error nil)))
+    `(progn
+       (let* ((,window (selected-window))
+              ;; Check conditions and capture scroll BEFORE body runs
+              (,should-restore (and (window-live-p ,window)
+                                    (eq (current-buffer) (window-buffer ,window))))
+              (,buffer (window-buffer ,window))
+              (,lines-before-cursor nil))
+         (when ,should-restore
+           (with-current-buffer ,buffer
+             (setq ,lines-before-cursor (count-screen-lines
+                                         (save-excursion
+                                           (goto-char (window-start))
+                                           (beginning-of-visual-line)
+                                           (point))
+                                         (save-excursion
+                                           (beginning-of-visual-line)
+                                           (point))
+                                         nil
+                                         ,window))))
+         (unwind-protect
+             (progn ,@body)
+           (when ,should-restore
+             (set-window-start ,window
+                               ;; Dotimes and (line-move-visual -1) is more
+                               ;; accurate than (line-move-visual N).
+                               (save-excursion
+                                 (dotimes (_ ,lines-before-cursor)
+                                   (condition-case nil
+                                       (let ((line-move-visual t)
+                                             (line-move-ignore-invisible t))
+                                         (line-move -1))
+                                     (error nil)))
 
-                               (beginning-of-visual-line)
-                               (point))))))))
+                                 (beginning-of-visual-line)
+                                 (point)))))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
-  "Execute BODY while preserving the horizontal scroll of the selected window.
-
-This macro saves the current `window-hscroll` of the selected window.
-After BODY executes, the horizontal scroll is restored exactly, leaving
-the vertical position and window start unchanged.
-
-Use this macro when you only need to maintain horizontal alignment,
-without restoring the lines above the cursor."
+  "Execute BODY while preserving the horizontal scroll of the selected window."
   (declare (indent 0) (debug t))
   (let ((window (make-symbol "window"))
-        (hscroll (make-symbol "window-hscroll")))
-    `(let ((,window (selected-window))
-           (,hscroll (window-hscroll)))
+        (hscroll (make-symbol "hscroll"))
+        (should-restore (make-symbol "should-restore")))
+    `(let* ((,window (selected-window))
+            ;; Check conditions and capture scroll BEFORE body runs
+            (,should-restore (and (window-live-p ,window)
+                                  (eq (current-buffer) (window-buffer ,window))))
+            (,hscroll (when ,should-restore
+                        (window-hscroll ,window))))
        (unwind-protect
-           (progn ,@body)
-         (set-window-hscroll ,window ,hscroll)))))
+           (progn ,@body) ; Execute body exactly ONCE
+         ;; Restore only if conditions were originally met
+         (when (and ,should-restore (window-live-p ,window))
+           (set-window-hscroll ,window ,hscroll))))))
 
 ;;; Functions: open/close folds
 
