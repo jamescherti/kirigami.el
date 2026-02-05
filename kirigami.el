@@ -373,16 +373,20 @@ The return values of functions in this hook are ignored.")
 
 (defun kirigami-fold-action (list action &optional ignore-errors)
   "Perform fold ACTION for each matching major or minor mode in LIST.
-Returns the value of the executed folding function, or nil if the
-operation was blocked or failed."
-  ;; 1. Check Hook Authorization (Gatekeeper)
+
+The procedure executes `kirigami-pre-action-functions` as a gatekeeper.
+If authorized, it executes the transformation. The post-action hook
+triggers only if the operation returns a non-nil value and completes
+without unhandled errors.
+
+Returns the result of the folding function, or nil if the operation
+was blocked or failed."
   (when (run-hook-with-args-until-failure 'kirigami-pre-action-functions action)
     (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
       (when fn
-        ;; 2. Execute and Preserve Return Value
-        (prog1 (with-demoted-errors "Error: %S" (funcall fn))
-          ;; 3. Post-Action Notification
-          (run-hook-with-args 'kirigami-post-action-functions action))))))
+        (let ((result (with-demoted-errors "Error: %S" (funcall fn))))
+          (run-hook-with-args 'kirigami-post-action-functions action)
+          result)))))
 
 ;;; Functions: `outline' enhancements (`kirigami-enhance-outline')
 
