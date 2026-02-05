@@ -21,6 +21,7 @@ If **kirigami** enhances your workflow, please show your support by **⭐ starri
 In addition to unified interface for opening and closing folds, the **kirigami** package:
 - **Enhances Visual Stability on Fold Opening and Closing:** Preserves the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start. This Kirigami enhancement avoids the disruptive window jump or forced re-centering commonly observed during bulk folding operations.
 - **Enhances outline:** Enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. When **kirigami** closes outline folds, it preserves the visibility of folded headings in the window.)
+- **Hooks for Folding Actions:** Two hooks, `kirigami-pre-action-functions` and `kirigami-post-action-functions`, let external code run before and after every folding operation. The pre-action hook runs just before a fold is opened or closed and can allow or block the action. The post-action hook runs once the change is complete and can be used to update UI elements or keep external packages in sync with the new folding state.
 
 ## Features
 
