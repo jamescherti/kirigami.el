@@ -302,6 +302,37 @@ would ignore `:close-all' actions and invoke the provided functions on
 ;;   :type 'boolean
 ;;   :group 'kirigami)
 
+(defvar kirigami-pre-action-predicate nil
+  "A predicate function invoked prior to executing a buffer folding ACTION.
+
+The variable holds a function that accepts one argument, ACTION, representing
+the intended folding transformation. Valid values for ACTION include: :open-all,
+:close-all, :toggle, :open, :open-rec, or :close.
+
+Execution proceeds only if the predicate returns a non-nil value. A return value
+of nil results in the cancellation of the operation.")
+
+(defvar kirigami-pre-action-functions nil
+  "Hook dispatched before the execution of buffer folding procedures.
+
+Each function member is invoked with a single argument, ACTION, denoting the
+specific transformation. The ACTION argument is constrained to the following
+keywords: :open-all, :close-all, :toggle, :open, :open-rec, or :close.
+
+IMPORTANT: This hook acts as a gatekeeper. Each function MUST return a non-nil
+value to authorize the operation. If any member returns nil, the execution
+sequence is immediately terminated and the action is denied.")
+
+(defvar kirigami-post-action-functions nil
+  "Hook dispatched after the execution of buffer folding procedures.
+
+Each function member is invoked with a single argument, ACTION, denoting the
+specific transformation that was completed. The ACTION argument is constrained
+to the following keywords: :open-all, :close-all, :toggle, :open, :open-rec, or
+:close.
+
+The return values of functions in this hook are ignored.")
+
 ;;; Internal functions
 
 ;; (defun kirigami--message (&rest args)
@@ -351,10 +382,20 @@ would ignore `:close-all' actions and invoke the provided functions on
         (kirigami-fold--action-get-func (cdr list) action ignore-errors)))))
 
 (defun kirigami-fold-action (list action &optional ignore-errors)
-  "Perform fold ACTION for each matching major or minor mode in LIST."
-  (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
-    (when fn
-      (with-demoted-errors "Error: %S" (funcall fn)))))
+  "Perform fold ACTION for each matching major or minor mode in LIST.
+Returns the value of the executed folding function, or nil if the
+operation was blocked or failed."
+  ;; 1. Check Global Predicate
+  (when (or (not (functionp kirigami-pre-action-predicate))
+            (funcall kirigami-pre-action-predicate action))
+    ;; 2. Check Hook Authorization (Gatekeeper)
+    (when (run-hook-with-args-until-failure 'kirigami-pre-action-functions action)
+      (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
+        (when fn
+          ;; 3. Execute and Preserve Return Value
+          (prog1 (with-demoted-errors "Error: %S" (funcall fn))
+            ;; 4. Post-Action Notification
+            (run-hook-with-args 'kirigami-post-action-functions action)))))))
 
 ;;; Functions: `outline' enhancements (`kirigami-enhance-outline')
 
