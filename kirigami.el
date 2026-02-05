@@ -599,41 +599,42 @@ cursor."
         (buffer (make-symbol "buffer"))
         (should-restore (make-symbol "should-restore"))
         (lines-before-cursor (make-symbol "lines-before-cursor")))
-    `(progn
-       (let* ((,window (selected-window))
-              ;; Check conditions and capture scroll BEFORE body runs
-              (,should-restore (and (window-live-p ,window)
-                                    (eq (current-buffer) (window-buffer ,window))))
-              (,buffer (window-buffer ,window))
-              (,lines-before-cursor nil))
+    `(let* ((,window (selected-window))
+            ;; Check conditions and capture scroll BEFORE body runs
+            (,should-restore (and (window-live-p ,window)
+                                  (eq (current-buffer) (window-buffer ,window))))
+            (,buffer (window-buffer ,window))
+            (,lines-before-cursor
+             (when ,should-restore (count-screen-lines
+                                    (save-excursion
+                                      (goto-char (window-start))
+                                      (beginning-of-visual-line)
+                                      (point))
+                                    (save-excursion
+                                      (beginning-of-visual-line)
+                                      (point))
+                                    nil
+                                    ,window))))
+       (unwind-protect
+           (progn ,@body)
          (when ,should-restore
-           (with-current-buffer ,buffer
-             (setq ,lines-before-cursor (count-screen-lines
-                                         (save-excursion
-                                           (goto-char (window-start))
-                                           (beginning-of-visual-line)
-                                           (point))
-                                         (save-excursion
-                                           (beginning-of-visual-line)
-                                           (point))
-                                         nil
-                                         ,window))))
-         (unwind-protect
-             (progn ,@body)
-           (when ,should-restore
-             (set-window-start ,window
-                               ;; Dotimes and (line-move-visual -1) is more
-                               ;; accurate than (line-move-visual N).
-                               (save-excursion
-                                 (dotimes (_ ,lines-before-cursor)
-                                   (condition-case nil
-                                       (let ((line-move-visual t)
-                                             (line-move-ignore-invisible t))
-                                         (line-move -1))
-                                     (error nil)))
+           (set-window-start ,window
+                             ;; Dotimes and (line-move-visual -1) is more
+                             ;; accurate than (line-move-visual N).
+                             (save-excursion
+                               (dotimes (_ ,lines-before-cursor)
+                                 (condition-case nil
+                                     (let ((line-move-visual t)
+                                           (line-move-ignore-invisible t)
+                                           ;; Disable the "Goal Column" behavior
+                                           ;; so it moves vertically
+                                           (temporary-goal-column 0)
+                                           (goal-column nil))
+                                       (line-move -1))
+                                   (error nil)))
 
-                                 (beginning-of-visual-line)
-                                 (point)))))))))
+                               (beginning-of-visual-line)
+                               (point))))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
   "Execute BODY while preserving the horizontal scroll of the selected window."
