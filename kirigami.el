@@ -93,7 +93,7 @@
           "https://github.com/jamescherti/kirigami.el"))
 
 (defcustom kirigami-enhance-outline t
-  "Enable enhancements for `outline' and `outline-minor-mode' mode.
+  "Enable enhancements for `outline' and `outline-minor-mode'.
 
 This enhances folding behavior in `outline-mode', `outline-minor-mode', and
 `org-mode':
@@ -454,6 +454,9 @@ This is the Emacs version of `outline-hide-subtree'."
                                    (if (outline-on-heading-p)
                                        (point)
                                      (outline-back-to-heading t)
+                                     ;; Explicitly return (point) because
+                                     ;; outline-back-to-heading returns t, not
+                                     ;; the location.
                                      (point)))
                                (error
                                 nil)))))
@@ -721,6 +724,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
 ;;;###autoload
 (defun kirigami-close-folds-except-current ()
   "Close all folds except the current one."
+  (interactive)
   (let ((point (point)))
     (kirigami-close-folds)
     (goto-char point)
