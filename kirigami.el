@@ -302,7 +302,7 @@ would ignore `:close-all' actions and invoke the provided functions on
 ;;   :type 'boolean
 ;;   :group 'kirigami)
 
-(defvar kirigami-pre-action-functions nil
+(defvar kirigami-pre-action-predicates nil
   "Hook dispatched before the execution of buffer folding procedures.
 
 Each function member is invoked with a single argument, ACTION, denoting the
@@ -374,14 +374,14 @@ The return values of functions in this hook are ignored.")
 (defun kirigami-fold-action (list action &optional ignore-errors)
   "Perform fold ACTION for each matching major or minor mode in LIST.
 
-The procedure executes `kirigami-pre-action-functions` as a gatekeeper.
+The procedure executes `kirigami-pre-action-predicates` as a gatekeeper.
 If authorized, it executes the transformation. The post-action hook
 triggers only if the operation returns a non-nil value and completes
 without unhandled errors.
 
 Returns the result of the folding function, or nil if the operation
 was blocked or failed."
-  (when (run-hook-with-args-until-failure 'kirigami-pre-action-functions action)
+  (when (run-hook-with-args-until-failure 'kirigami-pre-action-predicates action)
     (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
       (when fn
         (let ((result (with-demoted-errors "Error: %S" (funcall fn))))
