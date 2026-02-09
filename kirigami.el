@@ -453,7 +453,8 @@ This is the Emacs version of `outline-hide-subtree'."
                                    (beginning-of-visual-line)
                                    (if (outline-on-heading-p)
                                        (point)
-                                     (outline-back-to-heading t)))
+                                     (outline-back-to-heading t)
+                                     (point)))
                                (error
                                 nil)))))
         ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
