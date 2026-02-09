@@ -660,6 +660,13 @@ cursor."
 
 ;;; Functions: open/close folds
 
+(defun kirigami-close-folds-except-current ()
+  "Close all folds except the current one."
+  (let ((point (point)))
+    (kirigami-close-folds)
+    (goto-char point)
+    (kirigami-open-fold)))
+
 ;;;###autoload
 (defun kirigami-open-fold ()
   "Open fold at point.
@@ -720,15 +727,6 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
           (save-excursion
             (kirigami-fold-action kirigami-fold-list :close-all))))
     (kirigami-fold-action kirigami-fold-list :close-all)))
-
-;;;###autoload
-(defun kirigami-close-folds-except-current ()
-  "Close all folds except the current one."
-  (interactive)
-  (let ((point (point)))
-    (kirigami-close-folds)
-    (goto-char point)
-    (kirigami-open-fold)))
 
 (provide 'kirigami)
 ;;; kirigami.el ends here
