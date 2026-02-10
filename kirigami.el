@@ -638,7 +638,9 @@ cursor."
                                    (error nil)))
 
                                (beginning-of-visual-line)
-                               (point))))))))
+                               (point))
+                             ;; noforce
+                             t))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
   "Execute BODY while preserving the horizontal scroll of the selected window."
