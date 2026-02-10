@@ -639,7 +639,7 @@ cursor."
 
                                (beginning-of-visual-line)
                                (point))
-                             ;; noforce
+                             ;; NOFORCE: prevents Emacs from moving the cursor
                              t))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
