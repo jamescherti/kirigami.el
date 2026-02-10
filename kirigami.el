@@ -108,7 +108,7 @@ specific reason to disable these enhancements."
   :type 'boolean
   :group 'kirigami)
 
-(defcustom kirigami-preserve-visual-position t
+(defcustom kirigami-preserve-visual-position nil
   "When non-nil, maintain the cursor's vertical position during folding.
 This prevents the window from jumping or re-centering when headings are expanded
 or collapsed, keeping the relative distance between the cursor and the top of
@@ -672,7 +672,12 @@ cursor."
   "Open fold at point.
 See also `kirigami-close-fold'."
   (interactive)
-  (kirigami-fold-action kirigami-fold-list :open))
+  (if kirigami-preserve-visual-position
+      (kirigami--save-window-hscroll
+        (kirigami--save-window-start
+          (save-excursion
+            (kirigami-fold-action kirigami-fold-list :open))))
+    (kirigami-fold-action kirigami-fold-list :open)))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
