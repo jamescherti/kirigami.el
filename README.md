@@ -152,6 +152,16 @@ Here is an example using the built-in `hs-minor-mode`, which Kirigami supports b
 
 ## Frequently Asked Questions
 
+### Maintaining Vertical Cursor Position During Folding
+
+Folding packages such as Outline, Outline Indent, and Org mode depend on the native Emacs redisplay engine to handle visibility changes. Expanding or collapsing folds can cause `window-start` to shift relative to the current line. When this displacement moves the cursor off-screen, Emacs triggers an abrupt recentering. This visual discontinuity disrupts spatial context and requires manual effort to relocate the cursor.
+
+To address these issues, the following option can be used to eliminate visual discontinuities by preventing window shifts and suppressing forced recentering when headings are expanded or collapsed:
+
+```elisp
+(setq kirigami-preserve-visual-position t)
+```
+
 ### What is the meaning of the word Kirigami?
 
 Kirigami is a form of Origami, the Japanese art that transforms a flat sheet of paper into a figure through controlled folds. In kirigami, the sheet is both folded and cut to form a three-dimensional structure that rises from the surface.
