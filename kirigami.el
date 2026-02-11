@@ -28,7 +28,8 @@
 ;; diverse set of major and minor modes in Emacs, including `outline-mode',
 ;; `outline-minor-mode', `outline-indent-mode', `org-mode', `markdown-mode',
 ;; `vdiff-mode', `vdiff-3way-mode', `hs-minor-mode', `hide-ifdef-mode',
-;; `origami-mode', `yafolding-mode', `folding-mode', and `treesit-fold-mode'.
+;; `origami-mode', `yafolding-mode', `folding-mode', `ts-fold-mode', and
+;; `treesit-fold-mode'.
 ;;
 ;; With Kirigami, folding key bindings only need to be configured once. After
 ;; that, the same keys work consistently across all supported major and minor
@@ -53,34 +54,6 @@
 ;;   :ensure t)
 
 ;;; Code:
-
-;; Kirigami offers a unified interface for text folding across a diverse set of
-;; major and minor modes in Emacs, including `outline-mode',
-;; `outline-minor-mode', `outline-indent-mode', `org-mode', `markdown-mode',
-;; `vdiff-mode', `vdiff-3way-mode', `hs-minor-mode', `hide-ifdef-mode',
-;; `origami-mode', `yafolding-mode', `folding-mode', and `treesit-fold-mode'.
-;;
-;; With Kirigami, folding key bindings only need to be configured once. After
-;; that, the same keys work consistently across all supported major and minor
-;; modes, providing a unified and predictable folding experience. The available
-;; commands include:
-;;
-;; - `kirigami-open-fold': Open the fold at point.
-;; - `kirigami-open-fold-rec': Open the fold at point recursively.
-;; - `kirigami-close-fold': Close the fold at point.
-;; - `kirigami-open-folds': Open all folds in the buffer.
-;; - `kirigami-close-folds': Close all folds in the buffer.
-;; - `kirigami-toggle-fold': Toggle the fold at point.
-;;
-;; This eliminates the need to memorize or configure separate key bindings for
-;; each mode, providing a truly unified and efficient workflow. Users can fold,
-;; unfold, and navigate sections immediately, regardless of the file type or
-;; mode, saving time and reducing errors.
-;;
-;; (In addition to unified interface, the kirigami package enhances folding
-;; behavior in `outline-mode', `outline-minor-mode', and `org-mode'. It ensures
-;; that deep folds open reliably and allows folds to be closed even when the
-;; cursor is positioned inside the content.)
 
 ;;; Variables
 
@@ -201,6 +174,21 @@ the window constant."
      :open       yafolding-show-element
      :open-rec   yafolding-show-element
      :close      yafolding-hide-element)
+    ((ts-fold-mode)
+     :open-all    ts-fold-open-all
+     :close-all   ts-fold-close-all
+     :toggle      ts-fold-toggle
+     :open        ts-fold-open
+     :open-rec    ts-fold-open-recursively
+     :close       ts-fold-close)
+    ;; TODO support vimish-fold-mode
+    ;; ((vimish-fold-mode)
+    ;;  :open-all   ,(lambda () (call-interactively 'vimish-fold-unfold-all))
+    ;;  :close-all  ,(lambda () (call-interactively 'vimish-fold-refold-all))
+    ;;  :toggle     ,(lambda () (call-interactively 'vimish-fold-toggle))
+    ;;  :open       ,(lambda () (call-interactively 'vimish-fold-unfold))
+    ;;  :open-rec   ,(lambda () (call-interactively 'vimish-fold-unfold))
+    ;;  :close      ,(lambda () (call-interactively 'vimish-fold-refold)))
     ((outline-mode
       outline-minor-mode
       outline-indent-minor-mode
@@ -213,14 +201,6 @@ the window constant."
      :open       kirigami--outline-open
      :open-rec   kirigami--outline-show-subtree
      :close      kirigami--outline-close)
-    ;; TODO support vimish-fold-mode
-    ;; ((vimish-fold-mode)
-    ;;  :open-all   ,(lambda () (call-interactively 'vimish-fold-unfold-all))
-    ;;  :close-all  ,(lambda () (call-interactively 'vimish-fold-refold-all))
-    ;;  :toggle     ,(lambda () (call-interactively 'vimish-fold-toggle))
-    ;;  :open       ,(lambda () (call-interactively 'vimish-fold-unfold))
-    ;;  :open-rec   ,(lambda () (call-interactively 'vimish-fold-unfold))
-    ;;  :close      ,(lambda () (call-interactively 'vimish-fold-refold)))
     )
   "Actions to be performed for various folding operations.
 
