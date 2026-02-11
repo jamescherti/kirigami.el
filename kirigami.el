@@ -117,26 +117,7 @@ the window constant."
   :group 'kirigami)
 
 (defvar kirigami-fold-list
-  `(((outline-indent-minor-mode)
-     :open-all   ,(lambda ()
-                    (when (fboundp 'outline-indent-open-folds)
-                      (call-interactively 'outline-indent-open-folds)))
-     :close-all  ,(lambda ()
-                    (when (fboundp 'outline-indent-close-folds)
-                      (call-interactively 'outline-indent-close-folds)))
-     :toggle     ,(lambda ()
-                    (when (fboundp 'outline-indent-toggle-fold)
-                      (call-interactively 'outline-indent-toggle-fold)))
-     :open       ,(lambda ()
-                    (when (fboundp 'outline-indent-open-fold)
-                      (call-interactively 'outline-indent-open-fold)))
-     :open-rec   ,(lambda ()
-                    (when (fboundp 'outline-indent-open-fold-rec)
-                      (call-interactively 'outline-indent-open-fold-rec)))
-     :close      ,(lambda ()
-                    (when (fboundp 'outline-indent-close-fold)
-                      (call-interactively 'outline-indent-close-fold))))
-    ((vdiff-mode)
+  `(((vdiff-mode)
      :open-all   vdiff-open-all-folds
      :close-all  vdiff-close-all-folds
      :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
@@ -222,38 +203,16 @@ the window constant."
      :close      yafolding-hide-element)
     ((outline-mode
       outline-minor-mode
+      outline-indent-minor-mode
       org-mode
       markdown-mode
       gfm-mode)
-     :open-all   show-all
+     :open-all   kirigami--outline-open-all
      :close-all  kirigami--outline-close-all
-     :toggle     outline-toggle-children
-     :open       ,(lambda ()
-                    (cond
-                     ((and (bound-and-true-p outline-indent-minor-mode)
-                           (fboundp 'outline-indent-open-fold))
-                      (outline-indent-open-fold))
-
-                     ((and kirigami-enhance-outline
-                           (fboundp 'kirigami--outline-show-entry))
-                      (kirigami--outline-show-entry))
-
-                     (t
-                      (when (and (fboundp 'show-entry)
-                                 (fboundp 'show-children))
-                        (ignore-errors
-                          (show-entry)
-                          (show-children))))))
-     :open-rec show-subtree
-     :close ,(lambda ()
-               (cond
-                ((and kirigami-enhance-outline
-                      (fboundp 'kirigami--outline-hide-subtree))
-                 (kirigami--outline-hide-subtree))
-
-                (t
-                 (when (fboundp 'hide-subtree)
-                   (hide-subtree))))))
+     :toggle     kirigami--outline-toggle-children
+     :open       kirigami--outline-open
+     :open-rec   kirigami--outline-show-subtree
+     :close      kirigami--outline-close)
     ;; TODO support vimish-fold-mode
     ;; ((vimish-fold-mode)
     ;;  :open-all   ,(lambda () (call-interactively 'vimish-fold-unfold-all))
@@ -265,7 +224,7 @@ the window constant."
     )
   "Actions to be performed for various folding operations.
 
-The value should be a list of fold handlers, were a fold handler has
+The value should be a list of fold handlers, where a fold handler has
 the format: ((MODES) PROPERTIES)
 
 MODES acts as a predicate, containing the symbols of all major or minor modes
@@ -388,24 +347,56 @@ was blocked or failed."
           (run-hook-with-args 'kirigami-post-action-functions action)
           result)))))
 
+(defun kirigami--outline-ensure-window-start-heading-visible ()
+  "Adjust the window to ensure the current heading remains visible.
+
+This function checks if the heading governing the text at the top of the window
+is currently scrolled off-screen. If so, it resets the window start to the
+heading's position.
+
+This fixes an issue in `outline-mode' where folding a subtree that is partially
+scrolled off-screen causes the heading to disappear."
+  (interactive)
+  (when kirigami-enhance-outline
+    (save-match-data
+      (when (and (fboundp 'outline-on-heading-p)
+                 (fboundp 'outline-invisible-p)
+                 (fboundp 'outline-back-to-heading))
+        (let ((heading-point (save-excursion
+                               (condition-case nil
+                                   (progn
+                                     (goto-char (window-start))
+                                     (when (outline-invisible-p (point))
+                                       (outline-back-to-heading)
+                                       (point)))
+                                 (error
+                                  nil)))))
+          ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
+          ;; bug in outline and Evil where headings could scroll out of view when
+          ;; their subtrees were folded. TODO Send a patch to Emacs and/or Evil
+          (when (and heading-point
+                     (< heading-point (window-start)))
+            (set-window-start (selected-window) heading-point t)))))))
+
 ;;; Functions: `outline' enhancements (`kirigami-enhance-outline')
 
 (defun kirigami--outline-heading-folded-p ()
   "Return non-nil if the body following the current heading is folded."
   (if (fboundp 'outline-back-to-heading)
       (save-excursion
-        (outline-back-to-heading)
-        (end-of-line)
-        ;; Is it invisible?
-        (cond ((and (bound-and-true-p outline-minor-mode)
-                    (fboundp 'outline-invisible-p))
-               (funcall 'outline-invisible-p (point)))
+        (save-match-data
+          (outline-back-to-heading)
+          (end-of-line)
+          ;; Is it invisible?
+          (cond ((and (bound-and-true-p outline-minor-mode)
+                      (fboundp 'outline-invisible-p))
+                 (funcall 'outline-invisible-p (point)))
 
-              ((and (derived-mode-p 'org-mode)
-                    (fboundp 'org-invisible-p))
-               (funcall 'org-invisible-p (point)))
+                ((and (derived-mode-p 'org-mode)
+                      (fboundp 'org-invisible-p))
+                 (funcall 'org-invisible-p (point)))
 
-              (t (invisible-p (point)))))
+                (t (invisible-p (point))))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--outline-legacy-show-entry ()
@@ -439,33 +430,19 @@ This is the Emacs version of `outline-hide-subtree'."
         (outline-flag-subtree t))
     (error "Required outline functions are undefined")))
 
-(defun kirigami--outline-close-all ()
-  "Close all folds and ensure the first heading remains visible."
-  (when (fboundp 'hide-sublevels)
-    (hide-sublevels 1)
 
-    (when (and (fboundp 'outline-on-heading-p)
-               (fboundp 'outline-back-to-heading))
-      (let ((heading-point (save-excursion
-                             (condition-case nil
-                                 (progn
-                                   (goto-char (window-start))
-                                   (beginning-of-visual-line)
-                                   (if (outline-on-heading-p)
-                                       (point)
-                                     (outline-back-to-heading t)
-                                     ;; Explicitly return (point) because
-                                     ;; outline-back-to-heading returns t, not
-                                     ;; the location.
-                                     (point)))
-                               (error
-                                nil)))))
-        ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
-        ;; bug in outline and Evil where headings could scroll out of view when
-        ;; their subtrees were folded. TODO Send a patch to Emacs and/or Evil
-        (when (and heading-point
-                   (< heading-point (window-start)))
-          (set-window-start (selected-window) heading-point t))))))
+
+(defun kirigami--outline-toggle-children ()
+  "Show or hide the current `outline' subtree depending on its current state."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-toggle-fold))
+    (call-interactively 'outline-indent-toggle-fold))
+
+   ((fboundp 'outline-toggle-children)
+    (unwind-protect
+        (outline-toggle-children)
+      (kirigami--outline-ensure-window-start-heading-visible)))))
 
 (defun kirigami--outline-show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
@@ -660,6 +637,107 @@ cursor."
          (when (and ,should-restore (window-live-p ,window))
            (set-window-hscroll ,window ,hscroll))))))
 
+(defun kirigami--outline-close ()
+  "Close the `outline' fold at point."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-close-fold))
+    (call-interactively 'outline-indent-close-fold))
+
+   ((and kirigami-enhance-outline
+         (fboundp 'kirigami--outline-hide-subtree))
+    (kirigami--outline-hide-subtree))
+
+   ((fboundp 'outline-hide-subtree)
+    (unwind-protect
+        (outline-hide-subtree)
+      (kirigami--outline-ensure-window-start-heading-visible)))
+
+   ((fboundp 'hide-subtree)
+    (unwind-protect
+        (hide-subtree)
+      (kirigami--outline-ensure-window-start-heading-visible)))))
+
+(defun kirigami--outline-show-subtree ()
+  "Open `outline' fold at point recursively."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-open-fold-rec))
+    (call-interactively 'outline-indent-open-fold-rec))
+
+   ((fboundp 'outline-show-subtree)
+    (unwind-protect
+        (outline-show-subtree)
+      (kirigami--outline-ensure-window-start-heading-visible)))
+
+   ((fboundp 'show-subtree)
+    (unwind-protect
+        (show-subtree)
+      (kirigami--outline-ensure-window-start-heading-visible)))))
+
+(defun kirigami--outline-open ()
+  "Open the `outline' fold at point."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-open-fold))
+    (call-interactively 'outline-indent-open-fold))
+
+   ((and kirigami-enhance-outline
+         (fboundp 'kirigami--outline-show-entry))
+    (unwind-protect
+        (kirigami--outline-show-entry)
+      (kirigami--outline-ensure-window-start-heading-visible)))
+
+   ((and (fboundp 'outline-show-entry)
+         (fboundp 'outline-show-children))
+    (unwind-protect
+        (ignore-errors
+          (outline-show-entry)
+          (outline-show-children))
+      (kirigami--outline-ensure-window-start-heading-visible)))
+
+   ((and (fboundp 'show-entry)
+         (fboundp 'show-children))
+    (unwind-protect
+        (ignore-errors
+          (show-entry)
+          (show-children))
+      (kirigami--outline-ensure-window-start-heading-visible)))))
+
+(defun kirigami--outline-open-all ()
+  "Show all `outline' folds and ensure the first heading remains visible."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-open-folds))
+    (call-interactively 'outline-indent-open-folds))
+
+   ((fboundp 'outline-show-all)
+    (unwind-protect
+        (outline-show-all)
+      (kirigami--outline-ensure-window-start-heading-visible)))
+
+   ((fboundp 'show-all)
+    (unwind-protect
+        (show-all)
+      (kirigami--outline-ensure-window-start-heading-visible)))))
+
+(defun kirigami--outline-close-all ()
+  "Close all `outline' folds and ensure the first heading remains visible."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-close-folds))
+    (call-interactively 'outline-indent-close-folds))
+
+   ((fboundp 'outline-hide-sublevels)
+    (unwind-protect
+        (outline-hide-sublevels 1)
+      (kirigami--outline-ensure-window-start-heading-visible)))
+
+   ((fboundp 'hide-sublevels)
+    (unwind-protect
+        (hide-sublevels 1)
+      (kirigami--outline-ensure-window-start-heading-visible)))))
+
 ;;; Functions: open/close folds
 
 (defun kirigami-close-folds-except-current ()
@@ -677,8 +755,7 @@ See also `kirigami-close-fold'."
   (if kirigami-preserve-visual-position
       (kirigami--save-window-hscroll
         (kirigami--save-window-start
-          (save-excursion
-            (kirigami-fold-action kirigami-fold-list :open))))
+          (kirigami-fold-action kirigami-fold-list :open)))
     (kirigami-fold-action kirigami-fold-list :open)))
 
 ;;;###autoload
@@ -686,7 +763,11 @@ See also `kirigami-close-fold'."
   "Open fold at point recursively.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (kirigami-fold-action kirigami-fold-list :open-rec))
+  (if kirigami-preserve-visual-position
+      (kirigami--save-window-hscroll
+        (kirigami--save-window-start
+          (kirigami-fold-action kirigami-fold-list :open-rec)))
+    (kirigami-fold-action kirigami-fold-list :open-rec)))
 
 ;;;###autoload
 (defun kirigami-open-folds ()
@@ -696,8 +777,7 @@ See also `kirigami-close-folds'."
   (if kirigami-preserve-visual-position
       (kirigami--save-window-hscroll
         (kirigami--save-window-start
-          (save-excursion
-            (kirigami-fold-action kirigami-fold-list :open-all))))
+          (kirigami-fold-action kirigami-fold-list :open-all)))
     (kirigami-fold-action kirigami-fold-list :open-all)))
 
 ;;;###autoload
@@ -708,8 +788,7 @@ See also `kirigami-open-fold'."
   (if kirigami-preserve-visual-position
       (kirigami--save-window-hscroll
         (kirigami--save-window-start
-          (save-excursion
-            (kirigami-fold-action kirigami-fold-list :close))))
+          (kirigami-fold-action kirigami-fold-list :close)))
     (kirigami-fold-action kirigami-fold-list :close)))
 
 ;;;###autoload
@@ -720,8 +799,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (if kirigami-preserve-visual-position
       (kirigami--save-window-hscroll
         (kirigami--save-window-start
-          (save-excursion
-            (kirigami-fold-action kirigami-fold-list :toggle))))
+          (kirigami-fold-action kirigami-fold-list :toggle)))
     (kirigami-fold-action kirigami-fold-list :toggle)))
 
 ;;;###autoload
@@ -731,8 +809,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (if kirigami-preserve-visual-position
       (kirigami--save-window-hscroll
         (kirigami--save-window-start
-          (save-excursion
-            (kirigami-fold-action kirigami-fold-list :close-all))))
+          (kirigami-fold-action kirigami-fold-list :close-all)))
     (kirigami-fold-action kirigami-fold-list :close-all)))
 
 (provide 'kirigami)

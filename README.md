@@ -20,7 +20,7 @@ If **kirigami** enhances your workflow, please show your support by **⭐ starri
 
 In addition to unified interface for opening and closing folds, the **kirigami** package:
 - **Enhances Visual Stability on Fold Opening and Closing:** Preserves the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start. This Kirigami enhancement avoids the disruptive window jump or forced re-centering commonly observed during bulk folding operations.
-- **Enhances outline:** Enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. When **kirigami** closes outline folds, it preserves the visibility of folded headings in the window.)
+- **Enhances outline:** Kirigami improves folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and permits closing folds even when the cursor is positioned within the content body. Additionally, it maintains window-start heading stability by automatically adjusting the scroll position to keep folded headings visible, preventing the context from disappearing when closing a fold that is partially scrolled off-screen.
 - **Hooks for Folding Actions:** Two hooks, `kirigami-pre-action-predicates` and `kirigami-post-action-functions`, let external code run before and after every folding operation. The pre-action hook runs just before a fold is opened or closed and can allow or block the action. The post-action hook runs once the change is complete and can be used to update UI elements or keep external packages in sync with the new folding state.
 
 ## Features
@@ -151,6 +151,16 @@ Here is an example using the built-in `hs-minor-mode`, which Kirigami supports b
 ```
 
 ## Frequently Asked Questions
+
+### Maintaining Vertical Cursor Position During Folding
+
+Folding packages such as Outline, Outline Indent, and Org mode depend on the native Emacs redisplay engine to handle visibility changes. Expanding or collapsing folds can cause `window-start` to shift relative to the current line. When this displacement moves the cursor off-screen, Emacs triggers an abrupt recentering. This visual discontinuity disrupts spatial context and requires manual effort to relocate the cursor.
+
+To address these issues, the following option can be used to eliminate visual discontinuities by preventing window shifts and suppressing forced recentering when headings are expanded or collapsed:
+
+```elisp
+(setq kirigami-preserve-visual-position t)
+```
 
 ### What is the meaning of the word Kirigami?
 
