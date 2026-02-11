@@ -172,7 +172,9 @@ Code folding in Emacs operates on a similar principle. Blocks of text remain pre
 
 ## Comments from users
 
-* [neurolit on GitHub](https://github.com/jamescherti/kirigami.el/pull/1#issuecomment-3599434757): "thank you very much for this package!"
+* [neurolit on GitHub](https://github.com/jamescherti/kirigami.el/pull/1#issuecomment-3599434757): "Thank you very much for this package!"
+
+* [jcs090218](https://github.com/jamescherti/kirigami.el/issues/2#issue-3719002530): "Thanks for this great package!"
 
 ## Author and License
 
