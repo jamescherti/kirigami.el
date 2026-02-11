@@ -730,11 +730,7 @@ cursor."
   "Open fold at point.
 See also `kirigami-close-fold'."
   (interactive)
-  (if kirigami-preserve-visual-position
-      (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (kirigami-fold-action kirigami-fold-list :open)))
-    (kirigami-fold-action kirigami-fold-list :open)))
+  (kirigami-fold-action kirigami-fold-list :open))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
