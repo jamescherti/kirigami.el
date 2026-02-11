@@ -90,7 +90,19 @@ the window constant."
   :group 'kirigami)
 
 (defvar kirigami-fold-list
-  `(((vdiff-mode)
+  `(((outline-mode
+      outline-minor-mode
+      outline-indent-minor-mode
+      org-mode
+      markdown-mode
+      gfm-mode)
+     :open-all   kirigami--outline-open-all
+     :close-all  kirigami--outline-close-all
+     :toggle     kirigami--outline-toggle-children
+     :open       kirigami--outline-open
+     :open-rec   kirigami--outline-show-subtree
+     :close      kirigami--outline-close)
+    ((vdiff-mode)
      :open-all   vdiff-open-all-folds
      :close-all  vdiff-close-all-folds
      :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
@@ -104,23 +116,6 @@ the window constant."
      :open       ,(lambda () (call-interactively 'vdiff-open-fold))
      :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
      :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
-    ((folding-mode)
-     :open-all   folding-open-buffer
-     :close-all  ,(lambda()
-                    (save-excursion
-                      (when (fboundp 'folding-whole-buffer)
-                        (folding-whole-buffer))))
-     :toggle     folding-toggle-show-hide
-     :open       folding-show-current-entry
-     :open-rec   folding-show-current-subtree
-     :close      folding-hide-current-entry)
-    ((treesit-fold-mode)
-     :open-all   treesit-fold-open-all
-     :close-all  treesit-fold-close-all
-     :toggle     treesit-fold-toggle
-     :open       treesit-fold-open
-     :open-rec   treesit-fold-open-recursively
-     :close      treesit-fold-close)
     ((hs-minor-mode)
      :open-all   hs-show-all
      :close-all  ,(lambda ()
@@ -151,6 +146,30 @@ the window constant."
      :open       show-ifdef-block
      :open-rec   nil
      :close      hide-ifdef-block)
+    ((ts-fold-mode)
+     :open-all    ts-fold-open-all
+     :close-all   ts-fold-close-all
+     :toggle      ts-fold-toggle
+     :open        ts-fold-open
+     :open-rec    ts-fold-open-recursively
+     :close       ts-fold-close)
+    ((treesit-fold-mode)
+     :open-all   treesit-fold-open-all
+     :close-all  treesit-fold-close-all
+     :toggle     treesit-fold-toggle
+     :open       treesit-fold-open
+     :open-rec   treesit-fold-open-recursively
+     :close      treesit-fold-close)
+    ((folding-mode)
+     :open-all   folding-open-buffer
+     :close-all  ,(lambda()
+                    (save-excursion
+                      (when (fboundp 'folding-whole-buffer)
+                        (folding-whole-buffer))))
+     :toggle     folding-toggle-show-hide
+     :open       folding-show-current-entry
+     :open-rec   folding-show-current-subtree
+     :close      folding-hide-current-entry)
     ((origami-mode)
      :open-all   ,(lambda () (when (fboundp 'origami-open-all-nodes)
                                (origami-open-all-nodes (current-buffer))))
@@ -165,6 +184,13 @@ the window constant."
                                                               (point))))
      :close      ,(lambda () (when (fboundp 'origami-close-node)
                                (origami-close-node (current-buffer) (point)))))
+    ((vimish-fold-mode)
+     :open-all   vimish-fold-unfold-all
+     :close-all  vimish-fold-refold-all
+     :toggle     vimish-fold-toggle
+     :open       vimish-fold-unfold
+     :open-rec   vimish-fold-unfold
+     :close      vimish-fold-refold)
     ((yafolding-mode)
      :open-all   yafolding-show-all
      :close-all ,(lambda () (save-excursion
@@ -173,35 +199,7 @@ the window constant."
      :toggle     yafolding-toggle-element
      :open       yafolding-show-element
      :open-rec   yafolding-show-element
-     :close      yafolding-hide-element)
-    ((ts-fold-mode)
-     :open-all    ts-fold-open-all
-     :close-all   ts-fold-close-all
-     :toggle      ts-fold-toggle
-     :open        ts-fold-open
-     :open-rec    ts-fold-open-recursively
-     :close       ts-fold-close)
-    ;; TODO support vimish-fold-mode
-    ;; ((vimish-fold-mode)
-    ;;  :open-all   ,(lambda () (call-interactively 'vimish-fold-unfold-all))
-    ;;  :close-all  ,(lambda () (call-interactively 'vimish-fold-refold-all))
-    ;;  :toggle     ,(lambda () (call-interactively 'vimish-fold-toggle))
-    ;;  :open       ,(lambda () (call-interactively 'vimish-fold-unfold))
-    ;;  :open-rec   ,(lambda () (call-interactively 'vimish-fold-unfold))
-    ;;  :close      ,(lambda () (call-interactively 'vimish-fold-refold)))
-    ((outline-mode
-      outline-minor-mode
-      outline-indent-minor-mode
-      org-mode
-      markdown-mode
-      gfm-mode)
-     :open-all   kirigami--outline-open-all
-     :close-all  kirigami--outline-close-all
-     :toggle     kirigami--outline-toggle-children
-     :open       kirigami--outline-open
-     :open-rec   kirigami--outline-show-subtree
-     :close      kirigami--outline-close)
-    )
+     :close      yafolding-hide-element))
   "Actions to be performed for various folding operations.
 
 The value should be a list of fold handlers, where a fold handler has
