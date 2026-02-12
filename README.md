@@ -171,7 +171,7 @@ Code folding in Emacs has historically suffered from reliability issues, which l
 
 The **kirigami** package also provides a unified interface for opening and closing folds. Without it, users must manually configure keybindings for each individual mode, a tedious process. It functions as a set-and-forget enhancement for code folding. It requires configuration only once. Subsequently, the same keys and functions enable consistent folding and unfolding across all supported major and minor modes.
 
-(It is highly recommended for use with outline-based modes, such as `markdown-mode`, `gfm-mode`, `org-mode`, `outline-minor-mode`, or `outline-indent-minor-mode`. This package resolves persistent inconsistencies and prevents incorrect folding behavior.)
+(The **kirigami** package is highly recommended for use with outline-based modes, such as `markdown-mode`, `gfm-mode`, `org-mode`, `outline-minor-mode`, or `outline-indent-minor-mode`. This package resolves persistent inconsistencies and prevents incorrect folding behavior.)
 
 ### What code folding packages does the author use in addition to kirigami.el?
 
