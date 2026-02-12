@@ -68,10 +68,15 @@
 
 (defcustom kirigami-enhance-outline t
   "Enable enhancements for `outline' and `outline-minor-mode'.
-
-This enhances folding behavior in `outline-mode', `outline-minor-mode', and
-`org-mode':
+This improves folding behavior in `outline-mode', `outline-minor-mode',
+`org-mode', `markdown-mode', `gfm-mode', `outline-indent-minor-mode', and any
+other mode built upon `outline-minor-mode':
 - It ensures that deep folds open reliably
+- It ensures that sibling folds at the same level are visible when a sub-fold is
+  expanded
+- It maintains `window-start' heading stability by automatically adjusting the
+  scroll position to keep folded headings visible, preventing the context from
+  disappearing when closing a fold that is partially scrolled off-screen.
 - It allows folds to be closed even when the cursor is positioned inside the
   content.
 - Additionally, it resolves upstream Emacs issues, such as
