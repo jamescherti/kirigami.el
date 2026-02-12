@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The **kirigami** Emacs package offers a **unified interface for opening and closing folds** across a diverse set of major and minor modes in Emacs, including `treesit-fold-mode`, `hs-minor-mode` (hideshow), `outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, and `ts-fold-mode`.
+The **kirigami** Emacs package offers a **unified interface for opening and closing folds** across a diverse set of major and minor modes in Emacs, including `treesit-fold-mode`, `hs-minor-mode` (hideshow), `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, and `ts-fold-mode`.
 
 With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available commands include:
 
@@ -31,11 +31,11 @@ Here are the features that **kirigami** offers:
 * **Extensible fold list**: Users can easily add or customize folding methods for different modes through the `kirigami-fold-list` alist.
 * Support for multiple folding backends, including:
   * `outline-mode`, `outline-minor-mode`
-  * `outline-indent-mode` ([outline-indent.el](https://github.com/jamescherti/outline-indent.el), a package that enables code folding based on indentation)
+  * `outline-indent-minor-mode` ([outline-indent.el](https://github.com/jamescherti/outline-indent.el), a package that enables code folding based on indentation)
   * `org-mode`
   * `markdown-mode` and `gfm-mode`
   * `vdiff-mode` and `vdiff-3way-mode`
-  * `hs-minor-mode`
+  * `hs-minor-mode` (hideshow)
   * `hide-ifdef-mode`
   * `vimish-fold-mode`
   * `fold-this-mode`
@@ -227,4 +227,4 @@ Other Emacs packages by the same author:
 - [stripspace.el](https://github.com/jamescherti/stripspace.el): Ensure Emacs Automatically removes trailing whitespace before saving a buffer, with an option to preserve the cursor column.
 - [persist-text-scale.el](https://github.com/jamescherti/persist-text-scale.el): Ensure that all adjustments made with text-scale-increase and text-scale-decrease are persisted and restored across sessions.
 - [pathaction.el](https://github.com/jamescherti/pathaction.el): Execute the pathaction command-line tool from Emacs. The pathaction command-line tool enables the execution of specific commands on targeted files or directories. Its key advantage lies in its flexibility, allowing users to handle various types of files simply by passing the file or directory as an argument to the pathaction tool. The tool uses a .pathaction.yaml rule-set file to determine which command to execute. Additionally, Jinja2 templating can be employed in the rule-set file to further customize the commands.
-- [kirigami.el](https://github.com/jamescherti/kirigami.el): The *kirigami* Emacs package offers a unified interface for opening and closing folds across a diverse set of major and minor modes in Emacs, including `outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, and `treesit-fold-mode`. With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable folding experience.
+- [kirigami.el](https://github.com/jamescherti/kirigami.el): The *kirigami* Emacs package offers a unified interface for opening and closing folds across a diverse set of major and minor modes in Emacs, including `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, and `treesit-fold-mode`. With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable folding experience.
