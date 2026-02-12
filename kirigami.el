@@ -529,9 +529,12 @@ visible in the window after hiding."
           ;; a bug in outline and Evil where headings could scroll out of view
           ;; when their subtrees were folded.
           ;; TODO Send a patch to Emacs and/or Evil
-          (when (and heading-point
-                     (< heading-point (window-start)))
-            (set-window-start (selected-window) heading-point t))))
+          (let ((window (selected-window)))
+            (when (and (window-live-p window)
+                       (eq (current-buffer) (window-buffer window)))
+              (when (and heading-point
+                         (< heading-point (window-start)))
+                (set-window-start (selected-window) heading-point t))))))
     (error "Required outline functions are undefined")))
 
 (defmacro kirigami--save-window-start (&rest body)
