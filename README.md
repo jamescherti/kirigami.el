@@ -42,7 +42,7 @@ Here are the features that **kirigami** offers:
   * `origami-mode`
   * `treesit-fold-mode`
   * `ts-fold-mode`
-* In addition to unified interface, the kirigami package enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows folds to be closed even when the cursor is positioned inside the content. When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
+* In addition to unified interface, the kirigami package enhances folding behavior in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably, allows folds to be closed even when the cursor is positioned inside the content, and ensures that sibling folds at the same level are visible when a sub-fold is expanded. When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
 
 The kirigami package supports Emacs version 26.3 and above.
 
@@ -164,6 +164,23 @@ To address these issues, the following option can be used to eliminate visual di
 ```elisp
 (setq kirigami-preserve-visual-position t)
 ```
+
+### Why the author developed the kirigami package?
+
+Code folding in Emacs has historically suffered from reliability issues, which led to the development of **kirigami**. Even built-in modes such as `outline-mode` and `outline-minor-mode` which are also used by `org-mode`, `gfm-mode`, and `markdown-mode` contain bugs that have not yet been addressed upstream, and **kirigami** fixes them.
+
+The **kirigami** package also provides a unified interface for opening and closing folds. Without it, users must manually configure keybindings for each individual mode, a tedious process. It functions as a set-and-forget enhancement for code folding. It requires configuration only once. Subsequently, the same keys and functions enable consistent folding and unfolding across all supported major and minor modes.
+
+(It is highly recommended for use with outline-based modes, such as `markdown-mode`, `gfm-mode`, `org-mode`, `outline-minor-mode`, or `outline-indent-minor-mode`. This package resolves persistent inconsistencies and prevents incorrect folding behavior.)
+
+### What code folding packages does the author use in addition to kirigami.el?
+
+In addition to the kirigami package, the author uses two reliable code folding packages:
+
+1. **Indentation-based folding** (Python, YAML, Haskell, etc.): [outline-indent](https://github.com/jamescherti/outline-indent.el)
+2. **Tree-sitter-based folding:** [treesit-fold](https://github.com/emacs-tree-sitter/treesit-fold) (The integration of Tree-sitter allows Emacs to operate on the Abstract Syntax Tree, making folding structurally accurate rather than heuristic.)
+
+The author prefers using `outline-indent` for languages like Python, despite having `treesit-fold` installed. The advantage of `outline-indent` is that it allows for infinite folding depth; it enables the folding of classes, functions within them, and even nested structures like `while` loops and `if` statements.
 
 ### What is the meaning of the word Kirigami?
 
