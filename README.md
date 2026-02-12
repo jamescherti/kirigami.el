@@ -1,11 +1,11 @@
-# kirigami.el - A Unified Interface for Text Folding across a diverse set of Emacs modes (`outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `hs-minor-mode`, `ts-fold-mode`, `treesit-fold-mode`, `vimish-fold-mode`...)
+# kirigami.el - A Unified Interface for Text Folding across a diverse set of Emacs modes (`outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `hs-minor-mode`, `fold-this-mode`, `ts-fold-mode`, `treesit-fold-mode`, `vimish-fold-mode`...)
 ![Build Status](https://github.com/jamescherti/kirigami.el/actions/workflows/ci.yml/badge.svg)
 [![MELPA](https://melpa.org/packages/kirigami-badge.svg)](https://melpa.org/#/kirigami)
 [![MELPA Stable](https://stable.melpa.org/packages/kirigami-badge.svg)](https://stable.melpa.org/#/kirigami)
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The **kirigami** Emacs package offers a **unified interface for opening and closing folds** across a diverse set of major and minor modes in Emacs, including `outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, and `treesit-fold-mode`.
+The **kirigami** Emacs package offers a **unified interface for opening and closing folds** across a diverse set of major and minor modes in Emacs, including `treesit-fold-mode`, `outline-mode`, `outline-minor-mode`, `outline-indent-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, and `ts-fold-mode`.
 
 With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available commands include:
 
@@ -38,6 +38,7 @@ Here are the features that **kirigami** offers:
   * `hs-minor-mode`
   * `hide-ifdef-mode`
   * `vimish-fold-mode`
+  * `fold-this-mode`
   * `yafolding-mode`
   * `origami-mode`
   * `treesit-fold-mode`
