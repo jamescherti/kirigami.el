@@ -197,6 +197,8 @@ Code folding in Emacs operates on a similar principle. Blocks of text remain pre
 
 * [jcs090218](https://github.com/jamescherti/kirigami.el/issues/2#issue-3719002530): "Thanks for this great package!"
 
+* [RideAndRoam3C](https://www.reddit.com/r/emacs/comments/1r1vvqr/comment/o52dnak/): "I enabled it today while doing some Org technical docs work. Solid."
+
 ## Author and License
 
 The *kirigami* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version. Special thanks to the developers of Evil mode. Kirigami builds upon the idea and function from Evil mode to provide enhanced and unified code folding functionality to all Emacs users.
