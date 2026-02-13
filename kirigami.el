@@ -343,38 +343,49 @@ was blocked or failed."
           result)))))
 
 (defun kirigami--outline-ensure-window-start-heading-visible ()
-  "Adjust the window to ensure the current heading remains visible.
+  "Adjust `window-start' in all windows of the current buffer to fix issues.
 
-This function checks if the heading governing the text at the top of the window
-is currently scrolled off-screen. If so, it resets the window start to the
-heading's position.
+This function iterates through every window displaying the current buffer. It
+checks if the text at the top of the window (`window-start') is currently hidden
+inside a folded outline subtree. If so, it resets the window start to the parent
+heading's position to make it visible.
 
-This fixes an issue in `outline-mode' where folding a subtree that is partially
-scrolled off-screen causes the heading to disappear."
+This fixes an issue in `outline-mode', `outline-minor-mode', `org-mode',
+`markdown-mode', `outline-indent-minor-mode'... where folding a subtree that is
+partially scrolled off-screen causes the heading to disappear."
   (interactive)
-  (let ((window (selected-window)))
-    (when (and kirigami-enhance-outline
-               (window-live-p window)
-               (eq (current-buffer) (window-buffer window)))
-      (save-match-data
-        (when (and (fboundp 'outline-on-heading-p)
-                   (fboundp 'outline-invisible-p)
-                   (fboundp 'outline-back-to-heading))
+  (when (and kirigami-enhance-outline
+             (fboundp 'outline-on-heading-p)
+             (fboundp 'outline-invisible-p)
+             (fboundp 'outline-back-to-heading)
+             (or (derived-mode-p 'outline-mode)
+                 (bound-and-true-p outline-minor-mode)))
+    ;; We are using save-match-data because inside outline-back-to-heading,
+    ;; Emacs performs a regular expression search (re-search-backward) to find
+    ;; the heading line. In Emacs Lisp, match data (the results of the last
+    ;; regex search) is global state.
+    (save-match-data
+      (dolist (current-window (get-buffer-window-list (current-buffer) nil t))
+        (when (window-live-p current-window)
           (let ((heading-point (save-excursion
                                  (condition-case nil
                                      (progn
-                                       (goto-char (window-start))
+                                       ;; Explicitly pass current-window to
+                                       ;; window-start
+                                       (goto-char (window-start current-window))
                                        (when (outline-invisible-p (point))
                                          (outline-back-to-heading)
                                          (point)))
                                    (error
                                     nil)))))
-            ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
-            ;; bug in outline and Evil where headings could scroll out of view when
-            ;; their subtrees were folded. TODO Send a patch to Emacs and/or Evil
+            ;; Ensure folded headings remain visible after hiding subtrees.
+            ;; Fixes a bug in outline and Evil where headings could scroll
+            ;; out of view when their subtrees were folded.
+            ;; TODO Send a patch to Emacs and/or Evil
             (when (and heading-point
-                       (< heading-point (window-start)))
-              (set-window-start (selected-window) heading-point t))))))))
+                       ;; Explicitly pass current-window to window-start
+                       (< heading-point (window-start current-window)))
+              (set-window-start current-window heading-point t))))))))
 
 ;;; Functions: `outline' enhancements (`kirigami-enhance-outline')
 
