@@ -335,12 +335,13 @@ without unhandled errors.
 
 Returns the result of the folding function, or nil if the operation
 was blocked or failed."
-  (when (run-hook-with-args-until-failure 'kirigami-pre-action-predicates action)
-    (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
-      (when fn
-        (let ((result (with-demoted-errors "Error: %S" (funcall fn))))
-          (run-hook-with-args 'kirigami-post-action-functions action)
-          result)))))
+  (save-match-data
+    (when (run-hook-with-args-until-failure 'kirigami-pre-action-predicates action)
+      (let ((fn (kirigami-fold--action-get-func list action ignore-errors)))
+        (when fn
+          (let ((result (with-demoted-errors "Error: %S" (funcall fn))))
+            (run-hook-with-args 'kirigami-post-action-functions action)
+            result))))))
 
 (defun kirigami--outline-ensure-window-start-heading-visible ()
   "Adjust `window-start' in all windows of the current buffer to fix issues.
