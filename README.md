@@ -1,4 +1,4 @@
-# kirigami.el - A unified interface for text folding across a diverse set of Emacs modes
+# kirigami.el - A unified method to fold and unfold text in Emacs
 ![Build Status](https://github.com/jamescherti/kirigami.el/actions/workflows/ci.yml/badge.svg)
 [![MELPA](https://melpa.org/packages/kirigami-badge.svg)](https://melpa.org/#/kirigami)
 [![MELPA Stable](https://stable.melpa.org/packages/kirigami-badge.svg)](https://stable.melpa.org/#/kirigami)
