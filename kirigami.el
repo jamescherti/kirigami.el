@@ -488,7 +488,7 @@ the entry is fully visible."
       (catch 'done
         (while (not (bobp))
           (condition-case nil
-              (progn (outline-up-heading 1 t))
+              (outline-up-heading 1 t)
             (error
              (throw 'done t)))
 
@@ -522,24 +522,31 @@ the entry is fully visible."
        nil))))
 
 (defun kirigami--outline-hide-subtree ()
-  "Close the current heading's subtree in a robust manner.
+  "Close the current heading's subtree.
 
-If the current heading is folded or contains no content, move to the previous
-heading with a higher level and close its subtree.
+If the current heading is folded or contains no content, locate the previous
+higher-level heading and close its subtree instead.
 
-Otherwise, close the current subtree. Ensures that folded headings remain
-visible in the window after hiding."
-  (if (and (fboundp 'outline-back-to-heading)
-           (fboundp 'outline-end-of-subtree)
-           (fboundp 'outline-up-heading)
-           (fboundp 'outline-on-heading-p))
-      (save-excursion
-        ;; Move to the current heading; error if before the first heading
-        (outline-back-to-heading)
+Keep the cursor at its original position (even if that position becomes hidden
+inside the fold)."
+  (unless (and (fboundp 'outline-back-to-heading)
+               (fboundp 'outline-end-of-subtree)
+               (fboundp 'outline-up-heading)
+               (fboundp 'outline-on-heading-p))
+    (error "Required outline functions are undefined"))
 
-        (let ((heading-point (point)))
-          ;; If the current heading is folded, or if it contains no content,
-          ;; move to the previous higher-level heading.
+  (save-excursion
+    (catch 'quit-function
+      ;; Move to the current heading; error if before the first heading
+      (condition-case nil
+          (outline-back-to-heading)
+        (error
+         (throw 'quit-function t)))
+
+      (let ((heading-point (point)))
+        ;; If the current heading is folded, or if it contains no content, move
+        ;; to the previous higher-level heading.
+        (catch 'done
           (when (or (kirigami--outline-heading-folded-p)  ; Folded?
                     ;; Or fold without any content
                     (let ((start (save-excursion (end-of-line)
@@ -548,23 +555,26 @@ visible in the window after hiding."
                                                (point))))
                       (= start end)))
             ;; Try to move up to previous higher-level heading
-            (outline-up-heading 1 t)
-            (setq heading-point (point)))
+            (condition-case nil
+                (outline-up-heading 1 t)
+              (error
+               (throw 'done t)))
 
-          (when (outline-on-heading-p)
-            (kirigami--outline-legacy-hide-subtree))
+            (setq heading-point (point))))
 
-          ;; Ensure folded headings remain visible after hiding subtrees. Fixes
-          ;; a bug in outline and Evil where headings could scroll out of view
-          ;; when their subtrees were folded.
-          ;; TODO Send a patch to Emacs and/or Evil
-          (let ((window (selected-window)))
-            (when (and (window-live-p window)
-                       (eq (current-buffer) (window-buffer window)))
-              (when (and heading-point
-                         (< heading-point (window-start)))
-                (set-window-start (selected-window) heading-point t))))))
-    (error "Required outline functions are undefined")))
+        (when (outline-on-heading-p)
+          (kirigami--outline-legacy-hide-subtree))
+
+        ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
+        ;; bug in outline and Evil where headings could scroll out of view when
+        ;; their subtrees were folded.
+        ;; TODO Send a patch to Emacs and/or Evil
+        (let ((window (selected-window)))
+          (when (and (window-live-p window)
+                     (eq (current-buffer) (window-buffer window))
+                     heading-point
+                     (< heading-point (window-start)))
+            (set-window-start (selected-window) heading-point t)))))))
 
 (defmacro kirigami--save-window-start (&rest body)
   "Preserve and restore `window-start' relative to the lines above the cursor.
@@ -836,11 +846,15 @@ See also `kirigami-close-folds'."
   "Close fold at point.
 See also `kirigami-open-fold'."
   (interactive)
-  (if kirigami-preserve-visual-position
-      (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (kirigami-fold-action kirigami-fold-list :close)))
-    (kirigami-fold-action kirigami-fold-list :close)))
+  (kirigami-fold-action kirigami-fold-list :close)
+
+  ;; TODO Only restore visual position when the heading < window-start
+  ;; (if kirigami-preserve-visual-position
+  ;;     (kirigami--save-window-hscroll
+  ;;       (kirigami--save-window-start
+  ;;         (kirigami-fold-action kirigami-fold-list :close)))
+  ;;   (kirigami-fold-action kirigami-fold-list :close))
+  )
 
 ;;;###autoload
 (defun kirigami-toggle-fold ()
