@@ -5,11 +5,11 @@
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-Kirigami provides a single interface to handle text folding across a wide range of major and minor modes. It supports `outline-minor-mode`, `org-mode`, `markdown-mode`, `treesit-fold`, `hideshow`, `vimish-fold`, and many others.
-
-You only need to configure your folding keys once. Kirigami ensures those keys work predictably regardless of the active mode.
+Kirigami provides a single interface to handle text folding across a wide range of major and minor modes.
 
 **Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, and `hs-minor-mode`.
+
+You only need to configure your folding keys once. Kirigami ensures those keys work predictably regardless of the active mode.
 
 * `kirigami-open-fold`: Open the fold at point.
 * `kirigami-open-fold-rec`: Open the fold at point recursively.
@@ -21,7 +21,7 @@ You only need to configure your folding keys once. Kirigami ensures those keys w
 If **kirigami** enhances your workflow, please show your support by **⭐ starring kirigami.el on GitHub** to help more Emacs users discover its benefits.
 
 In addition to unified interface for opening and closing folds, the **kirigami** package:
-- **Enhances Visual Stability on Fold Opening and Closing:** Preserves the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start. This Kirigami enhancement avoids the disruptive window jump or forced re-centering commonly observed during bulk folding operations.
+- **Visual Stability:** Preserves the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start. This Kirigami enhancement avoids the disruptive window jump or forced re-centering commonly observed during bulk folding operations.
 - **Enhances outline:** Kirigami improves folding in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode`. It ensures that deep folds open reliably and allows closing folds even when the cursor is in the content body. It also maintains heading stability by automatically adjusting the scroll position to keep folded headings visible, preventing them from scrolling off-screen. Furthermore, it ensures the buffer collapses correctly by identifying the shallowest existing heading level.
 - **Hooks for Folding Actions:** Two hooks, `kirigami-pre-action-predicates` and `kirigami-post-action-functions`, let external code run before and after every folding operation. The pre-action hook runs just before a fold is opened or closed and can allow or block the action. The post-action hook runs once the change is complete and can be used to update UI elements or keep external packages in sync with the new folding state.
 
