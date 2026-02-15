@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The Kirigami Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
+The **kirigami** Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
 
 **Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, and `hs-minor-mode` (hideshow).
 
