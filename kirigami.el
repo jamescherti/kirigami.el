@@ -28,9 +28,10 @@
 ;; closing folds across a diverse set of major and minor modes in Emacs,
 ;; including `treesit-fold-mode', `outline-mode', `outline-minor-mode',
 ;; `outline-indent-minor-mode', `org-mode', `markdown-mode', `gfm-mode',
-;; `vdiff-mode', `vdiff-3way-mode', `hs-minor-mode', `hide-ifdef-mode',
-;; `vimish-fold-mode', `fold-this-mode', `origami-mode', `yafolding-mode',
-;; `folding-mode', and `ts-fold-mode'.
+;; `vdiff-mode', `vdiff-3way-mode', `hs-minor-mode' (hideshow),
+;; `hide-ifdef-mode', `vimish-fold-mode', `TeX-fold-mode' (AUCTeX),
+;; `fold-this-mode', `origami-mode', `yafolding-mode', `folding-mode', and
+;; `ts-fold-mode'.
 ;;
 ;; With Kirigami, folding key bindings only need to be configured once. After
 ;; that, the same keys work consistently across all supported major and minor
@@ -208,6 +209,24 @@ the window constant."
      :open       vimish-fold-unfold
      :open-rec   vimish-fold-unfold
      :close      vimish-fold-refold)
+    ((TeX-fold-mode)
+     :open-all  TeX-fold-clearout-buffer
+     :close-all TeX-fold-buffer
+     :toggle    TeX-fold-dwim  ; Or a lambda calling TeX-fold-item
+     :open      TeX-fold-clearout-item
+     :open-rec  TeX-fold-clearout-item
+     :close     ,(lambda ()
+                   (when (and (fboundp 'TeX-active-mark)
+                              (fboundp 'TeX-fold-item)
+                              (fboundp 'TeX-fold-region)
+                              (fboundp 'TeX-fold-comment)
+                              (cond
+                               ((TeX-active-mark) (TeX-fold-region (mark)
+                                                                   (point)))
+                               ((TeX-fold-item 'macro))
+                               ((TeX-fold-item 'math))
+                               ((TeX-fold-item 'env))
+                               ((TeX-fold-comment)))))))
     ((yafolding-mode)
      :open-all   yafolding-show-all
      :close-all ,(lambda () (save-excursion
