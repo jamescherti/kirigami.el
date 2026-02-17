@@ -65,7 +65,7 @@
   :prefix "kirigami-"
   :link '(url-link
           :tag "Github"
-          "https://github.com/jamescherti/kirigami.el"))
+          :title "https://github.com/jamescherti/kirigami.el"))
 
 (defcustom kirigami-enhance-outline t
   "Enable enhancements for `outline' and `outline-minor-mode'.
@@ -388,16 +388,19 @@ partially scrolled off-screen causes the heading to disappear."
       (dolist (current-window (get-buffer-window-list (current-buffer) nil t))
         (when (window-live-p current-window)
           (let ((heading-point (save-excursion
-                                 (condition-case nil
-                                     (progn
-                                       ;; Explicitly pass current-window to
-                                       ;; window-start
-                                       (goto-char (window-start current-window))
-                                       (when (outline-invisible-p (point))
-                                         (outline-back-to-heading)
-                                         (point)))
-                                   (error
-                                    nil)))))
+                                 (progn
+                                   ;; Explicitly pass current-window to
+                                   ;; window-start
+                                   (goto-char (window-start current-window))
+                                   (when (outline-invisible-p (point))
+                                     (let ((result nil))
+                                       (condition-case nil
+                                           (progn
+                                             (outline-back-to-heading)
+                                             (setq result (point)))
+                                         (error
+                                          nil))
+                                       result))))))
             ;; Ensure folded headings remain visible after hiding subtrees.
             ;; Fixes a bug in outline and Evil where headings could scroll
             ;; out of view when their subtrees were folded.
@@ -411,58 +414,63 @@ partially scrolled off-screen causes the heading to disappear."
 
 (defun kirigami--outline-heading-folded-p ()
   "Return non-nil if the body following the current heading is folded."
-  (if (fboundp 'outline-back-to-heading)
-      (save-excursion
-        (save-match-data
+  (unless (fboundp 'outline-back-to-heading)
+    (error "Required outline functions are undefined"))
+
+  (save-excursion
+    (save-match-data
+      (catch 'done
+        (progn
           (condition-case nil
-              (progn (outline-back-to-heading)
-                     (end-of-line)
-                     ;; Is it invisible?
-                     (cond ((and (bound-and-true-p outline-minor-mode)
-                                 (fboundp 'outline-invisible-p))
-                            (funcall 'outline-invisible-p (point)))
-
-                           ((and (derived-mode-p 'org-mode)
-                                 (fboundp 'org-invisible-p))
-                            (funcall 'org-invisible-p (point)))
-
-                           (t (invisible-p (point)))))
-            ;; If outline-back-to-heading fails (e.g. before first heading), we
-            ;; assume it is NOT folded.
+              (outline-back-to-heading)
             (error
-             nil))))
-    (error "Required outline functions are undefined")))
+             (throw 'done t)))
+
+          (end-of-line)
+
+          ;; Is it invisible?
+          (cond ((and (bound-and-true-p outline-minor-mode)
+                      (fboundp 'outline-invisible-p))
+                 (funcall 'outline-invisible-p (point)))
+
+                ((and (derived-mode-p 'org-mode)
+                      (fboundp 'org-invisible-p))
+                 (funcall 'org-invisible-p (point)))
+
+                (t (invisible-p (point)))))))))
 
 (defun kirigami--outline-legacy-show-entry ()
   "Show the body directly following this heading.
 Show the heading too, if it is currently invisible.
 This is the Emacs version of `outline-show-entry'."
   (interactive)
-  (if (and (fboundp 'outline-back-to-heading)
-           (fboundp 'outline-flag-region)
-           (fboundp 'outline-next-preface))
-      (save-excursion
-        (outline-back-to-heading t)
-        (outline-flag-region (1- (point))
-                             (progn
-                               (outline-next-preface)
-                               (if (= 1 (- (point-max) (point)))
-                                   (point-max)
-                                 (point)))
-                             nil))
-    (error "Required outline functions are undefined")))
+  (unless (and (fboundp 'outline-back-to-heading)
+               (fboundp 'outline-flag-region)
+               (fboundp 'outline-next-preface))
+    (error "Required outline functions are undefined"))
+
+  (save-excursion
+    (outline-back-to-heading t)
+    (outline-flag-region (1- (point))
+                         (progn
+                           (outline-next-preface)
+                           (if (= 1 (- (point-max) (point)))
+                               (point-max)
+                             (point)))
+                         nil)))
 
 (defun kirigami--outline-legacy-hide-subtree (&optional event)
   "Hide everything after this heading at deeper levels.
 If non-nil, EVENT should be a mouse event.
 This is the Emacs version of `outline-hide-subtree'."
   (interactive (list last-nonmenu-event))
-  (if (and (fboundp 'outline-flag-subtree))
-      (save-excursion
-        (when (mouse-event-p event)
-          (mouse-set-point event))
-        (outline-flag-subtree t))
-    (error "Required outline functions are undefined")))
+  (unless (and (fboundp 'outline-flag-subtree))
+    (error "Required outline functions are undefined"))
+
+  (save-excursion
+    (when (mouse-event-p event)
+      (mouse-set-point event))
+    (outline-flag-subtree t)))
 
 
 
@@ -508,6 +516,8 @@ the entry is fully visible."
         (condition-case nil
             (outline-up-heading 1 t)
           (error
+           ;; Handle outline-before-first-heading and "Already at the top of the
+           ;; outline"
            (throw 'done t)))
 
         (condition-case nil
@@ -516,36 +526,41 @@ the entry is fully visible."
            (throw 'done t))))))
 
   ;; Repeatedly reveal children and body until the entry is no longer folded
-  (condition-case nil
-      (let ((on-invisible-heading (when (outline-on-heading-p t)
-                                    (outline-invisible-p)))
-            (on-visible-heading (save-excursion
-                                  (beginning-of-line)
-                                  (outline-on-heading-p))))
-        ;; TODO select when (use-region-p)
+  (let ((on-invisible-heading (when (outline-on-heading-p t)
+                                (outline-invisible-p)))
+        (on-visible-heading (save-excursion
+                              (beginning-of-line)
+                              (outline-on-heading-p))))
+    ;; TODO select when (use-region-p)
 
-        ;; Repeatedly reveal children and body until the entry is no longer
-        ;; folded
-        (progn
-          (while (kirigami--outline-heading-folded-p)
-            (save-excursion
+    ;; Repeatedly reveal children and body until the entry is no longer
+    ;; folded
+    (catch 'done
+      (while (kirigami--outline-heading-folded-p)
+        (save-excursion
+          (condition-case nil
               (outline-back-to-heading)
+            (error
+             (throw 'done t)))
 
-              ;; Ignore errors here so that if show-children fails, the loop
-              ;; continues and reveals the body text via legacy-show-entry.
-              (ignore-errors
-                (outline-show-children))
+          ;; Ignore errors here so that if show-children fails, the loop
+          ;; continues and reveals the body text via legacy-show-entry.
+          ;; This handles cases where structure is inconsistent.
+          (condition-case nil
+              (outline-show-children)
+            (error
+             nil))
 
-              (kirigami--outline-legacy-show-entry))))
+          (condition-case nil
+              (kirigami--outline-legacy-show-entry)
+            (error
+             (throw 'done t))))))
 
-        ;; If the header was previously hidden, hide the subtree to collapse
-        ;; it. Otherwise, leave the fold open. This allows the user to
-        ;; decide whether to expand the content under the cursor.
-        (when (and on-invisible-heading (not on-visible-heading))
-          (kirigami--outline-legacy-hide-subtree)))
-    ;; `outline-back-to-heading' issue
-    (outline-before-first-heading
-     nil)))
+    ;; If the header was previously hidden, hide the subtree to collapse
+    ;; it. Otherwise, leave the fold open. This allows the user to
+    ;; decide whether to expand the content under the cursor.
+    (when (and on-invisible-heading (not on-visible-heading))
+      (kirigami--outline-legacy-hide-subtree))))
 
 (defun kirigami--outline-hide-subtree ()
   "Close the current heading's subtree.
@@ -809,18 +824,14 @@ cursor."
                        nil))
 
                     ;; Try to move to the next visible heading.
-                    (condition-case nil
-                        (progn
-                          (outline-next-visible-heading 1)
-                          ;; SAFETY CHECK: If point did not move forward, we
-                          ;; must stop. This catches cases where the function
-                          ;; returns successfully but fails to advance (e.g., at
-                          ;; the last heading in some modes).
-                          (when (<= (point) current-point)
-                            (setq done t)))
-                      ;; Standard termination: outline-next-visible-heading
-                      ;; errors at EOB
-                      (error (setq done t)))))))
+                    (progn
+                      (outline-next-visible-heading 1)
+                      ;; SAFETY CHECK: If point did not move forward, we
+                      ;; must stop. This catches cases where the function
+                      ;; returns successfully but fails to advance (e.g., at
+                      ;; the last heading in some modes).
+                      (when (<= (point) current-point)
+                        (setq done t)))))))
           (kirigami--outline-ensure-window-start-heading-visible))
       ;; When `kirigami-enhance-outline' is nil
       (cond
