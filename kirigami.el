@@ -414,18 +414,23 @@ partially scrolled off-screen causes the heading to disappear."
   (if (fboundp 'outline-back-to-heading)
       (save-excursion
         (save-match-data
-          (outline-back-to-heading)
-          (end-of-line)
-          ;; Is it invisible?
-          (cond ((and (bound-and-true-p outline-minor-mode)
-                      (fboundp 'outline-invisible-p))
-                 (funcall 'outline-invisible-p (point)))
+          (condition-case nil
+              (progn (outline-back-to-heading)
+                     (end-of-line)
+                     ;; Is it invisible?
+                     (cond ((and (bound-and-true-p outline-minor-mode)
+                                 (fboundp 'outline-invisible-p))
+                            (funcall 'outline-invisible-p (point)))
 
-                ((and (derived-mode-p 'org-mode)
-                      (fboundp 'org-invisible-p))
-                 (funcall 'org-invisible-p (point)))
+                           ((and (derived-mode-p 'org-mode)
+                                 (fboundp 'org-invisible-p))
+                            (funcall 'org-invisible-p (point)))
 
-                (t (invisible-p (point))))))
+                           (t (invisible-p (point)))))
+            ;; If outline-back-to-heading fails (e.g. before first heading), we
+            ;; assume it is NOT folded.
+            (error
+             nil))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--outline-legacy-show-entry ()
@@ -525,7 +530,12 @@ the entry is fully visible."
           (while (kirigami--outline-heading-folded-p)
             (save-excursion
               (outline-back-to-heading)
-              (outline-show-children)
+
+              ;; Ignore errors here so that if show-children fails, the loop
+              ;; continues and reveals the body text via legacy-show-entry.
+              (ignore-errors
+                (outline-show-children))
+
               (kirigami--outline-legacy-show-entry))))
 
         ;; If the header was previously hidden, hide the subtree to collapse
