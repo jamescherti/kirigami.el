@@ -68,12 +68,12 @@ To install **kirigami** from MELPA:
 
 Here is an example of default key bindings:
 ```elisp
-(global-set-key (kbd "C-c k o") 'kirigami-open-fold)     ; Open fold at point
-(global-set-key (kbd "C-c k O") 'kirigami-open-fold-rec) ; Open fold recursively
-(global-set-key (kbd "C-c k m") 'kirigami-close-folds)   ; Close all folds
-(global-set-key (kbd "C-c k c") 'kirigami-close-fold)    ; Close fold at point
-(global-set-key (kbd "C-c k r") 'kirigami-open-folds)    ; Open all folds
-(global-set-key (kbd "C-c k TAB") 'kirigami-toggle-fold) ; Toggle fold at point
+(global-set-key (kbd "C-c z o") 'kirigami-open-fold)     ; Open fold at point
+(global-set-key (kbd "C-c z O") 'kirigami-open-fold-rec) ; Open fold recursively
+(global-set-key (kbd "C-c z m") 'kirigami-close-folds)   ; Close all folds
+(global-set-key (kbd "C-c z c") 'kirigami-close-fold)    ; Close fold at point
+(global-set-key (kbd "C-c z r") 'kirigami-open-folds)    ; Open all folds
+(global-set-key (kbd "C-c z TAB") 'kirigami-toggle-fold) ; Toggle fold at point
 ```
 
 ### Evil-mode Key Bindings
