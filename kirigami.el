@@ -65,7 +65,7 @@
   :prefix "kirigami-"
   :link '(url-link
           :tag "Github"
-          :title "https://github.com/jamescherti/kirigami.el"))
+          "https://github.com/jamescherti/kirigami.el"))
 
 (defcustom kirigami-enhance-outline t
   "Enable enhancements for `outline' and `outline-minor-mode'.
