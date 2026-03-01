@@ -643,40 +643,36 @@ cursor."
     `(let* ((,window (selected-window))
             ;; Check conditions and capture scroll BEFORE body runs
             (,should-restore (and (window-live-p ,window)
-                                  (eq (current-buffer) (window-buffer ,window))))
+                                  (eq (current-buffer)
+                                      (window-buffer ,window))))
             (,buffer (window-buffer ,window))
             (,lines-before-cursor
-             (when ,should-restore (count-screen-lines
-                                    (save-excursion
-                                      (goto-char (window-start))
-                                      (beginning-of-visual-line)
-                                      (point))
-                                    (save-excursion
-                                      (beginning-of-visual-line)
-                                      (point))
-                                    nil
-                                    ,window))))
+             (when ,should-restore
+               (count-screen-lines
+                (save-excursion
+                  (goto-char (window-start ,window))
+                  (beginning-of-visual-line)
+                  (point))
+                (save-excursion
+                  (beginning-of-visual-line)
+                  (point))
+                nil
+                ,window))))
        (unwind-protect
            (progn ,@body)
-         (when ,should-restore
+         ;; Ensure the window and buffer still exist before attempting
+         ;; restoration
+         (when (and ,should-restore
+                    (window-live-p ,window)
+                    (buffer-live-p ,buffer)
+                    (eq (current-buffer) ,buffer))
            (set-window-start ,window
-                             ;; Dotimes and (line-move-visual -1) is more
-                             ;; accurate than (line-move-visual N).
                              (save-excursion
-                               (dotimes (_ ,lines-before-cursor)
-                                 (condition-case nil
-                                     (let ((line-move-visual t)
-                                           (line-move-ignore-invisible t)
-                                           ;; Disable the "Goal Column" behavior
-                                           ;; so it moves vertically
-                                           (temporary-goal-column 0)
-                                           (goal-column nil))
-                                       (line-move -1))
-                                   (error nil)))
-
+                               (vertical-motion (- ,lines-before-cursor)
+                                                ,window)
                                (beginning-of-visual-line)
                                (point))
-                             ;; NOFORCE: prevents Emacs from moving the cursor
+                             ;; noforce
                              t))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
