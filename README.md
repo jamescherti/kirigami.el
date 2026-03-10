@@ -120,9 +120,10 @@ Kirigami defines several interactive commands. These commands abstract over all 
 
 When navigating vertically with visual line movement commands such as `previous-visual-line` or `next-visual-line` (or `evil-previous-visual-line` and `evil-next-visual-line` when using Evil), the cursor may enter invisible text if folded regions are present.
 
-This behavior occurs when end-of-line tracking is enabled and the cursor originates from a longer line. During vertical movement, the cursor attempts to preserve its logical column position, which may correspond to a location inside hidden content on the target line.
+This behavior occurs under the following conditions:
 
-In buffers that use structural folding, such as those based on Org mode or Outline mode, the logical end of a line can reside inside a folded region. As a result, vertical navigation may bypass visible headings and place the cursor on characters that belong to a hidden subtree. The cursor therefore follows the underlying logical structure of the buffer rather than the visible text presented to the user.
+* End-of-line tracking is enabled and the cursor originates from a longer line. During vertical movement, the cursor attempts to preserve its logical column position, which can correspond to a location inside hidden content on the target line. In buffers that use structural folding, such as those based on Org mode or Outline mode, the logical end of a line can reside inside a folded region. As a result, vertical navigation may bypass visible headings and place the cursor on characters that belong to a hidden subtree. The cursor therefore follows the underlying logical structure of the buffer rather than the visible text presented to the user.
+* `line-move-ignore-invisible` is set to nil, causing Emacs to include hidden or folded text during vertical movement rather than skipping it.
 
 To ensure that vertical navigation never lands in invisible text within folded regions, add the following to your configuration:
 
@@ -130,6 +131,7 @@ To ensure that vertical navigation never lands in invisible text within folded r
 ;; Ensure that vertical navigation never lands in invisible text within folded regions
 (setq track-eol nil)
 (setq evil-track-eol track-eol)
+(setq line-move-ignore-invisible t)
 ```
 
 ### Extending Kirigami: Adding other fold methods
