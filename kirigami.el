@@ -298,18 +298,6 @@ The return values of functions in this hook are ignored.")
 
 ;;; Internal functions
 
-;; (defun kirigami--message (&rest args)
-;;   "Display a message with the same ARGS arguments as `message'."
-;;   (apply #'message (concat "[kirigami] " (car args)) (cdr args)))
-
-;; (defmacro kirigami--verbose-message (&rest args)
-;;   "Display a verbose message with the same ARGS arguments as `message'."
-;;   (declare (indent 0) (debug t))
-;;   `(progn
-;;      (when kirigami-verbose
-;;        (kirigami--message
-;;         (concat ,(car args)) ,@(cdr args)))))
-
 (defun kirigami--call-preserve-column (fn)
   "Call FN and restore point to the original column when possible."
   (let ((column (current-column)))
@@ -526,8 +514,6 @@ the entry is fully visible."
               (on-visible-heading (save-excursion
                                     (beginning-of-line)
                                     (outline-on-heading-p))))
-          ;; TODO select when (use-region-p)
-
           ;; Repeatedly reveal children and body until the entry is no longer
           ;; folded
           (catch 'done
