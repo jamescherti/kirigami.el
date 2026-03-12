@@ -652,14 +652,28 @@ cursor."
                     (window-live-p ,window)
                     (buffer-live-p ,buffer)
                     (eq (current-buffer) ,buffer))
-           (set-window-start ,window
-                             (save-excursion
-                               (vertical-motion (- ,lines-before-cursor)
-                                                ,window)
-                               (beginning-of-visual-line)
-                               (point))
-                             ;; noforce
-                             t))))))
+           (let ((window-start (save-excursion
+                                 (condition-case nil
+                                     (let ((line-move-visual t)
+                                           (line-move-ignore-invisible t)
+                                           ;; Disable the "Goal Column" behavior
+                                           ;; so it moves vertically
+                                           (temporary-goal-column 0)
+                                           (goal-column nil))
+                                       (dotimes (_ ,lines-before-cursor)
+                                         (line-move -1 t)))
+                                   (error
+                                    nil))
+
+                                 ;; This does not work when truncate is disabled
+                                 ;; (vertical-motion (- ,lines-before-cursor)
+                                 ;;                  ,window)
+                                 (beginning-of-visual-line)
+                                 (point))))
+             (set-window-start ,window
+                               window-start
+                               ;; No force
+                               t)))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
   "Execute BODY while preserving the horizontal scroll of the selected window."
