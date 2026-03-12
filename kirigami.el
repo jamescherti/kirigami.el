@@ -619,21 +619,19 @@ Example:
             t))
 
 This macro is appropriate when it is necessary to maintain the visual layout of
-the buffer, particularly if BODY may scroll the window or otherwise move the
+the buffer, especially if BODY may scroll the window or otherwise move the
 cursor."
   (declare (indent 0) (debug t))
   (let ((window (make-symbol "window"))
-        (buffer (make-symbol "buffer"))
-        (should-restore (make-symbol "should-restore"))
-        (lines-before-cursor (make-symbol "lines-before-cursor")))
+        (window-buffer (make-symbol "window-buffer"))
+        (lines-before-cursor (make-symbol "lines-before-cursor"))
+        (start-pos (make-symbol "start-pos")))
     `(let* ((,window (selected-window))
+            (,window-buffer (window-buffer ,window))
             ;; Check conditions and capture scroll BEFORE body runs
-            (,should-restore (and (window-live-p ,window)
-                                  (eq (current-buffer)
-                                      (window-buffer ,window))))
-            (,buffer (window-buffer ,window))
             (,lines-before-cursor
-             (when ,should-restore
+             (when (and (window-live-p ,window)
+                        (eq (current-buffer) ,window-buffer))
                (count-screen-lines
                 (save-excursion
                   (goto-char (window-start ,window))
@@ -646,34 +644,23 @@ cursor."
                 ,window))))
        (unwind-protect
            (progn ,@body)
-         ;; Ensure the window and buffer still exist before attempting
+         ;; Ensure the window and window-buffer still exist before attempting
          ;; restoration
-         (when (and ,should-restore
+         (when (and ,lines-before-cursor
                     (window-live-p ,window)
-                    (buffer-live-p ,buffer)
-                    (eq (current-buffer) ,buffer))
-           (let ((window-start (save-excursion
-                                 (condition-case nil
-                                     (let ((line-move-visual t)
-                                           (line-move-ignore-invisible t)
-                                           ;; Disable the "Goal Column" behavior
-                                           ;; so it moves vertically
-                                           (temporary-goal-column 0)
-                                           (goal-column nil))
-                                       (dotimes (_ ,lines-before-cursor)
-                                         (line-move -1 t)))
-                                   (error
-                                    nil))
-
-                                 ;; This does not work when truncate is disabled
-                                 ;; (vertical-motion (- ,lines-before-cursor)
-                                 ;;                  ,window)
-                                 (beginning-of-visual-line)
-                                 (point))))
-             (set-window-start ,window
-                               window-start
-                               ;; No force
-                               t)))))))
+                    (buffer-live-p ,window-buffer)
+                    (eq (current-buffer) (current-buffer)))
+           (let ((,start-pos (save-excursion
+                               (beginning-of-visual-line)
+                               (vertical-motion (- ,lines-before-cursor)
+                                                ,window)
+                               (beginning-of-visual-line)
+                               (point))))
+             (when ,start-pos
+               (set-window-start ,window
+                                 ,start-pos
+                                 ;; No force
+                                 t))))))))
 
 (defmacro kirigami--save-window-hscroll (&rest body)
   "Execute BODY while preserving the horizontal scroll of the selected window."
