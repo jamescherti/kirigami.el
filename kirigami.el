@@ -628,7 +628,6 @@ cursor."
         (start-pos (make-symbol "start-pos")))
     `(let* ((,window (selected-window))
             (,window-buffer (window-buffer ,window))
-            ;; Check conditions and capture scroll BEFORE body runs
             (,lines-before-cursor
              (when (and (window-live-p ,window)
                         (eq (current-buffer) ,window-buffer))
@@ -644,8 +643,6 @@ cursor."
                 ,window))))
        (unwind-protect
            (progn ,@body)
-         ;; Ensure the window and window-buffer still exist before attempting
-         ;; restoration
          (when (and ,lines-before-cursor
                     (window-live-p ,window)
                     (buffer-live-p ,window-buffer)
