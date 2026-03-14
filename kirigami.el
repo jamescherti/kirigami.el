@@ -52,8 +52,7 @@
 ;;
 ;; Installation from MELPA
 ;; -----------------------
-;; (use-package kirigami
-;;   :ensure t)
+;; (use-package kirigami)
 
 ;;; Code:
 
