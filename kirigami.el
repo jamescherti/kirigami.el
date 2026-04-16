@@ -484,8 +484,9 @@ the entry is fully visible."
            (fboundp 'outline-back-to-heading)
            (fboundp 'outline-show-children)
            (fboundp 'outline-up-heading)
-           (fboundp 'outline-show-children))
-      (progn
+           (fboundp 'outline-show-children)
+           (fboundp 'outline-level))
+      (save-match-data
         ;; Workaround for an outline-mode limitation: when jumping via imenu or
         ;; search, sibling headings above the current one and at the same level
         ;; often remain hidden. This ensures all sub-items at the current level
@@ -493,7 +494,8 @@ the entry is fully visible."
         (save-excursion
           ;; Climbing as long as a parent heading exists
           (catch 'done
-            (while (not (bobp))
+            (outline-back-to-heading t)
+            (while (> (outline-level) 1)
               (condition-case nil
                   (outline-up-heading 1 t)
                 (error
