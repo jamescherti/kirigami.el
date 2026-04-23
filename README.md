@@ -1,4 +1,4 @@
-# kirigami.el - A Unified Method to Fold and Unfold Text in Emacs Across a diverse set of Modes
+# kirigami.el - A Unified Method to Fold and Unfold Text in Emacs Across a Diverse Set of Modes
 ![Build Status](https://github.com/jamescherti/kirigami.el/actions/workflows/ci.yml/badge.svg)
 [![MELPA](https://melpa.org/packages/kirigami-badge.svg)](https://melpa.org/#/kirigami)
 [![MELPA Stable](https://stable.melpa.org/packages/kirigami-badge.svg)](https://stable.melpa.org/#/kirigami)
@@ -11,12 +11,12 @@ The **kirigami** Emacs package provides a unified method to fold and unfold text
 
 With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available commands include:
 
-* `kirigami-open-fold`: Open the fold at point.
-* `kirigami-open-fold-rec`: Open the fold at point recursively.
-* `kirigami-close-fold`: Close the fold at point.
-* `kirigami-open-folds`: Open all folds in the buffer.
-* `kirigami-close-folds`: Close all folds in the buffer.
-* `kirigami-toggle-fold`: Toggle the fold at point.
+- `kirigami-open-fold`: Open the fold at point.
+- `kirigami-open-fold-rec`: Open the fold at point recursively.
+- `kirigami-close-fold`: Close the fold at point.
+- `kirigami-open-folds`: Open all folds in the buffer.
+- `kirigami-close-folds`: Close all folds in the buffer.
+- `kirigami-toggle-fold`: Toggle the fold at point.
 
 In addition to unified interface, the kirigami package enhances folding behavior in `outline`, `markdown-mode`, and `org-mode` packages. It ensures that deep folds open reliably, allows folds to be closed even when the cursor is positioned inside the content, and ensures that sibling folds at the same level are visible when a sub-fold is expanded. When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
 
@@ -25,29 +25,29 @@ If **kirigami** enhances your workflow, please show your support by **⭐ starri
 ## Features
 
 Here are the features that **kirigami** offers:
-* **Uniform commands**: The same commands and keys can be used to open, close, toggle, or check folds, no matter what mode is active. (Commands: `kirigami-open-fold`, `kirigami-open-fold-rec`, `kirigami-open-folds`, `kirigami-close-fold`, `kirigami-toggle-fold`, `kirigami-close-folds`)
-* **Automatic handler selection**: Kirigami automatically chooses the right folding method based on the mode being used.
-* **Extensible fold list**: Users can easily add or customize folding methods for different modes through the `kirigami-fold-list` alist.
-* Support for multiple folding backends, including:
-  * `outline-mode`, `outline-minor-mode`
-  * `outline-indent-minor-mode` ([outline-indent.el](https://github.com/jamescherti/outline-indent.el), a package that enables code folding based on indentation)
-  * `org-mode`
-  * `markdown-mode` and `gfm-mode`
-  * `vdiff-mode` and `vdiff-3way-mode`
-  * `embark-collect-mode`
-  * `hs-minor-mode` (hideshow)
-  * `hide-ifdef-mode`
-  * `vimish-fold-mode`
-  * `TeX-fold-mode` (AUCTeX)
-  * `fold-this-mode`
-  * `yafolding-mode`
-  * `origami-mode`
-  * `treesit-fold-mode`
-  * `ts-fold-mode`
-* In addition to unified interface for opening and closing folds, the **kirigami** package:
-  * **Visual Stability:** Avoids the disruptive window jump by preserving the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start.
-  * **Enhances outline:** Improves folding in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode` by ensuring deep folds open reliably, keeping folded headings visible, and collapsing to the shallowest heading level.
-  * **Hooks:** `kirigami-pre-action-predicates` and `kirigami-post-action-functions` run before and after each fold, allowing actions to be allowed or blocked and enabling UI or external updates after changes.
+- **Uniform commands**: The same commands and keys can be used to open, close, toggle, or check folds, no matter what mode is active. (Commands: `kirigami-open-fold`, `kirigami-open-fold-rec`, `kirigami-open-folds`, `kirigami-close-fold`, `kirigami-toggle-fold`, `kirigami-close-folds`)
+- **Automatic handler selection**: Kirigami automatically chooses the right folding method based on the mode being used.
+- **Extensible fold list**: Users can easily add or customize folding methods for different modes through the `kirigami-fold-list` alist.
+- Support for multiple folding backends, including:
+  - `outline-mode`, `outline-minor-mode` (built-in)
+  - `hs-minor-mode` (hideshow, built-in)
+  - `outline-indent-minor-mode` ([outline-indent.el](https://github.com/jamescherti/outline-indent.el), a package that enables code folding based on indentation)
+  - `org-mode` (built-in)
+  - `markdown-mode` and `gfm-mode` ([markdown-mode](https://github.com/jrblevin/markdown-mode))
+  - `vdiff-mode` and `vdiff-3way-mode`
+  - `treesit-fold-mode` ([treesit-fold](https://github.com/emacs-tree-sitter/treesit-fold), which provides intelligent code folding by using the structural understanding of the built-in tree-sitter parser)
+  - `embark-collect-mode`
+  - `hide-ifdef-mode`
+  - `vimish-fold-mode`
+  - `origami-mode`
+  - `TeX-fold-mode` (AUCTeX)
+  - `fold-this-mode`
+  - `yafolding-mode`
+  - `ts-fold-mode`
+- In addition to unified interface for opening and closing folds, the **kirigami** package:
+  - **Visual Stability:** Avoids the disruptive window jump by preserving the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start.
+  - **Enhances outline:** Improves folding in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode` by ensuring deep folds open reliably, keeping folded headings visible, and collapsing to the shallowest heading level.
+  - **Hooks:** `kirigami-pre-action-predicates` and `kirigami-post-action-functions` run before and after each fold, allowing actions to be allowed or blocked and enabling UI or external updates after changes.
 
 The kirigami package supports Emacs version 26.3 and above.
 
@@ -73,7 +73,7 @@ Here is an example of default key bindings:
 (global-set-key (kbd "C-c z r") 'kirigami-open-folds)    ; Open all folds
 (global-set-key (kbd "C-c z c") 'kirigami-close-fold)    ; Close fold at point
 (global-set-key (kbd "C-c z m") 'kirigami-close-folds)   ; Close all folds
-(global-set-key (kbd "C-c z TAB") 'kirigami-toggle-fold) ; Toggle fold at point
+(global-set-key (kbd "C-c z a") 'kirigami-toggle-fold)   ; Toggle fold at point
 ```
 
 ### Evil-mode Key Bindings
@@ -91,53 +91,196 @@ Evil-mode users can override the default folding keys with the following configu
   (define-key evil-normal-state-map "zm" 'kirigami-close-folds))
 ```
 
+### Configuring and Enabling Folding Backends
+
+Kirigami acts as a unified interface and requires an underlying folding backend to be active in the current buffer. The following section provides a comprehensive guide on installing and enabling some of the supported folding modes.
+
+**NOTE:** When configuring folding backends, ensure that no more than one folding minor mode is active concurrently in a single buffer, as conflicts and unexpected behavior may occur. For this reason, adding folding hooks to broad categories like `prog-mode-hook` or `text-mode-hook` is discouraged. Instead, hooks should be applied specifically to individual language modes.
+
+#### Built-in Emacs Modes
+
+These modes are included with Emacs by default. They only need to be enabled in the configuration.
+
+- **outline-minor-mode:** Useful for structured text and code.
+  ```elisp
+  (add-hook 'emacs-lisp-mode-hook #'outline-minor-mode)
+  (add-hook 'conf-mode-hook #'outline-minor-mode)
+  ```
+
+- **hs-minor-mode (Hide-Show):** Ideal for C-style languages and others that use braces `{}`.
+  ```elisp
+  ;; Systems and General Purpose
+  (add-hook 'c-mode-hook #'hs-minor-mode)
+  (add-hook 'c++-mode-hook #'hs-minor-mode)
+  (add-hook 'java-mode-hook #'hs-minor-mode)
+  (add-hook 'rust-mode-hook #'hs-minor-mode)
+  (add-hook 'go-mode-hook #'hs-minor-mode)
+  (add-hook 'ruby-mode-hook #'hs-minor-mode)
+
+  ;; Web and Frontend
+  (add-hook 'js-mode-hook #'hs-minor-mode)
+  (add-hook 'typescript-mode-hook #'hs-minor-mode)
+  (add-hook 'css-mode-hook #'hs-minor-mode)
+
+  ;; Scripting, Data, and Infrastructure
+  (add-hook 'sh-mode-hook #'hs-minor-mode) ; for bash/shell scripts
+  (add-hook 'json-mode-hook #'hs-minor-mode)
+  (add-hook 'lua-mode-hook #'hs-minor-mode)
+  ```
+
+- **org-mode:** Enabled automatically when visiting `.org` files. No additional folding setup is required for Kirigami detection.
+
+#### Third-Party Packages
+
+These packages must be installed from a package repository such as MELPA prior to configuration.
+
+- **outline-indent-minor-mode:** Provides code folding based on indentation levels (highly recommended for Python, Haskell, and YAML).
+  ```elisp
+  ;; The outline-indent package provides a minor mode that enables code
+  ;; folding based on indentation levels.
+  ;; In addition to code folding, outline-indent allows:
+  ;; - Moving indented blocks up and down
+  ;; - Indenting/unindenting to adjust indentation levels
+  ;; - Inserting a new line with the same indentation level as the current line
+  ;; - Move backward/forward to the indentation level of the current line
+  ;; - and other features.
+  ;; URL: https://github.com/jamescherti/outline-indent.el
+  (use-package outline-indent
+    :commands outline-indent-minor-mode
+    :custom
+    (outline-indent-ellipsis " ▼"))
+
+  ;; Python
+  (add-hook 'python-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'python-ts-mode-hook #'outline-indent-minor-mode)
+
+  ;; Yaml
+  (add-hook 'yaml-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'yaml-ts-mode-hook #'outline-indent-minor-mode)
+
+  ;; Haskell
+  (add-hook 'haskell-mode-hook #'outline-indent-minor-mode)
+  ```
+
+- **treesit-fold-mode and ts-fold-mode:** Provides structural code folding using Tree-sitter.
+  ```elisp
+  ;; Intelligent code folding by using the structural understanding of the
+  ;; built-in tree-sitter parser. Unlike traditional folding methods that rely on
+  ;; regular expressions or indentation, treesit-fold uses the actual syntax tree
+  ;; of the code to accurately identify foldable regions such as functions,
+  ;; classes, comments, and documentation strings.
+  ;; URL: https://github.com/emacs-tree-sitter/treesit-fold
+  (use-package treesit-fold
+    :commands (treesit-fold-close
+               treesit-fold-close-all
+               treesit-fold-open
+               treesit-fold-toggle
+               treesit-fold-open-all
+               treesit-fold-mode
+               global-treesit-fold-mode
+               treesit-fold-open-recursively
+               treesit-fold-line-comment-mode)
+
+    :custom
+    (treesit-fold-line-count-show t)
+    (treesit-fold-line-count-format " ▼")
+
+    :config
+    (set-face-attribute 'treesit-fold-replacement-face nil
+                        :foreground "#808080"
+                        :box nil
+                        :weight 'bold))
+
+  ;; Systems and General Purpose
+  (add-hook 'c-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'c++-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'java-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'rust-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'go-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'ruby-ts-mode-hook #'treesit-fold-mode)
+
+  ;; Web and Frontend
+  (add-hook 'js-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'typescript-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'tsx-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'css-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'html-ts-mode-hook #'treesit-fold-mode)
+
+  ;; Scripting and Infrastructure
+  (add-hook 'bash-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'cmake-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'dockerfile-ts-mode-hook #'treesit-fold-mode)
+
+  ;; Data and Configuration
+  (add-hook 'json-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'toml-ts-mode-hook #'treesit-fold-mode)
+
+  ;; Third-party
+  ;; (add-hook 'kotlin-ts-mode-hook #'treesit-fold-mode)
+  ;; (add-hook 'swift-ts-mode-hook #'treesit-fold-mode)
+  ;; (add-hook 'elixir-ts-mode-hook #'treesit-fold-mode)
+  ;; (add-hook 'zig-ts-mode-hook #'treesit-fold-mode)
+  ```
+
+- **markdown-mode and gfm-mode:** The standard major modes for Markdown files, which include native outline folding capabilities.
+  ```elisp
+  ;; The markdown-mode package provides a major mode for Emacs for syntax
+  ;; highlighting, editing commands, and preview support for Markdown documents.
+  ;; It supports core Markdown syntax as well as extensions like GitHub Flavored
+  ;; Markdown (GFM).
+  ;; URL: https://github.com/jrblevin/markdown-mode
+  (use-package markdown-mode
+    :commands (gfm-mode
+               gfm-view-mode
+               markdown-mode
+               markdown-view-mode)
+    :mode (("\\.markdown\\'" . markdown-mode)
+           ("\\.md\\'" . markdown-mode)
+           ("README\\.md\\'" . gfm-mode))
+    :bind
+    (:map markdown-mode-map
+          ("C-c C-e" . markdown-do)))
+
+  ;; Folding mode
+  (add-hook 'markdown-mode-hook #'outline-minor-mode)
+  ```
+
 ### Commands
 
 Kirigami defines several interactive commands. These commands abstract over all supported folding systems:
 
-* `kirigami-open-fold`
-  Open the fold at point.
-
-* `kirigami-open-fold-rec`
-  Open the fold at point recursively.
-
-* `kirigami-open-folds`
-  Open all folds in the buffer.
-
-* `kirigami-close-fold`
-  Close the fold at point.
-
-* `kirigami-toggle-fold`
-  Toggle the fold at point.
-
-* `kirigami-close-folds`
-  Close all folds in the buffer.
+- `kirigami-open-fold`: Open the fold at point.
+- `kirigami-open-fold-rec`: Open the fold at point recursively.
+- `kirigami-open-folds`: Open all folds in the buffer.
+- `kirigami-close-fold`: Close the fold at point.
+- `kirigami-toggle-fold`: Toggle the fold at point.
+- `kirigami-close-folds`: Close all folds in the buffer.
 
 ### Extending Kirigami: Adding other fold methods
 
 The core behavior is driven by `kirigami-fold-list`, a customizable list that associates folding actions with sets of major or minor modes. Each entry in the list specifies:
 
-* A list of modes that act as a predicate.
-* A property list describing supported folding actions.
+- A list of modes that act as a predicate.
+- A property list describing supported folding actions.
 
 Properties include:
 
-* `:open-all`
+- `:open-all`
   Function to open every fold in the current buffer.
 
-* `:close-all`
+- `:close-all`
   Function to close every fold in the current buffer.
 
-* `:toggle`
+- `:toggle`
   Function to toggle the fold at point.
 
-* `:open`
+- `:open`
   Function to open the fold at point.
 
-* `:open-rec`
+- `:open-rec`
   Function to open the fold at point recursively.
 
-* `:close`
+- `:close`
   Function to close the fold at point.
 
 Each property must specify a function. A value of `nil` indicates that the corresponding action is ignored for that handler.
@@ -156,6 +299,16 @@ Here is an example using the built-in `hs-minor-mode`, which Kirigami supports b
 ```
 
 ## Frequently Asked Questions
+
+### Why code folding?
+
+Code folding is about managing cognitive load, preserving spatial memory, and controlling screen real estate:
+
+- Navigating through code (e.g., with LSP) can create a vacuum of context. Folding an entire file to its top-level headings allows the manipulation of the file skeleton directly in the main buffer. Revealing only a specific entry and its parents provides an immediate understanding of the hierarchy without losing position.
+- When tasked with debugging a 20,000 line legacy file, immediate refactoring is rarely an option. Folding enables the visual modularization of massive files on the fly, making hostile codebases readable.
+- Every visible line of code on the screen requires a fraction of subconscious attention to ignore. During deep debugging sessions, folding adjacent functions or complex implementations acts as a visual garbage collector.
+- Moving or deleting a massive function or block is prone to selection errors. When a block is folded, it behaves as a single logical unit. Large chunks of logic can be cut, copied, or moved safely and cleanly without manually highlighting hundreds of lines.
+- Folding is effective for tracking progress during extensive pull requests. Collapsing previously examined functions or blocks actively filters out visual noise and enforces a strict focus on the unreviewed code.
 
 ### Why the author developed the kirigami package?
 
@@ -195,11 +348,11 @@ Code folding in Emacs operates on a similar principle. Blocks of text remain pre
 
 ## Comments from users
 
-* [neurolit on GitHub](https://github.com/jamescherti/kirigami.el/pull/1#issuecomment-3599434757): "Thank you very much for this package!"
+- [neurolit on GitHub](https://github.com/jamescherti/kirigami.el/pull/1#issuecomment-3599434757): "Thank you very much for this package!"
 
-* [jcs090218](https://github.com/jamescherti/kirigami.el/issues/2#issue-3719002530): "Thanks for this great package!"
+- [jcs090218](https://github.com/jamescherti/kirigami.el/issues/2#issue-3719002530): "Thanks for this great package!"
 
-* [RideAndRoam3C](https://www.reddit.com/r/emacs/comments/1r1vvqr/comment/o52dnak/): "I enabled it today while doing some Org technical docs work. Solid."
+- [RideAndRoam3C](https://www.reddit.com/r/emacs/comments/1r1vvqr/comment/o52dnak/): "I enabled it today while doing some Org technical docs work. Solid."
 
 ## Author and License
 
