@@ -411,18 +411,17 @@ partially scrolled off-screen causes the heading to disappear."
                 (error
                  (throw 'done t)))
 
-              (end-of-line)
-
               ;; Is it invisible?
               (cond ((and (bound-and-true-p outline-minor-mode)
                           (fboundp 'outline-invisible-p))
-                     (funcall 'outline-invisible-p (point)))
+                     (funcall 'outline-invisible-p (line-end-position)))
 
                     ((and (derived-mode-p 'org-mode)
                           (fboundp 'org-invisible-p))
-                     (funcall 'org-invisible-p (point)))
+                     (funcall 'org-invisible-p (line-end-position)))
 
-                    (t (invisible-p (point))))))))
+                    (t
+                     (invisible-p (line-end-position))))))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--outline-legacy-show-entry ()
@@ -545,6 +544,27 @@ the entry is fully visible."
             (kirigami--outline-legacy-hide-subtree))))
     (error "Required outline functions are undefined")))
 
+(defun kirigami--empty-subtree-p ()
+  "Return non-nil if the current outline heading has no content or subtrees."
+  (when (and (fboundp 'outline-on-heading-p)
+             (fboundp 'outline-end-of-heading)
+             (fboundp 'outline-end-of-subtree)
+             (fboundp 'outline-back-to-heading))
+    (save-match-data
+      (save-excursion
+        (outline-back-to-heading)
+        (let* ((start (progn
+                        (outline-end-of-heading)
+                        (when (eolp)
+                          (forward-char -1))
+                        (point)))
+               (end (progn
+                      (outline-end-of-subtree)
+                      (when (eolp)
+                        (forward-char -1))
+                      (point))))
+          (= start end))))))
+
 (defun kirigami--outline-hide-subtree ()
   "Close the current heading's subtree.
 
@@ -572,11 +592,7 @@ inside the fold)."
               (catch 'done
                 (when (or (kirigami--outline-heading-folded-p)  ; Folded?
                           ;; Or fold without any content
-                          (let ((start (save-excursion (end-of-line)
-                                                       (point)))
-                                (end (save-excursion (outline-end-of-subtree)
-                                                     (point))))
-                            (= start end)))
+                          (kirigami--empty-subtree-p))
                   ;; Try to move up to previous higher-level heading
                   (condition-case nil
                       (outline-up-heading 1 t)
@@ -588,9 +604,9 @@ inside the fold)."
               (when (outline-on-heading-p)
                 (kirigami--outline-legacy-hide-subtree))
 
-              ;; Ensure folded headings remain visible after hiding subtrees. Fixes a
-              ;; bug in outline and Evil where headings could scroll out of view when
-              ;; their subtrees were folded.
+              ;; Ensure folded headings remain visible after hiding subtrees.
+              ;; Fixes a bug in outline and Evil where headings could scroll out
+              ;; of view when their subtrees were folded.
               ;; TODO Send a patch to Emacs and/or Evil
               (let ((window (selected-window)))
                 (when (and (window-live-p window)
