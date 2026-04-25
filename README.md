@@ -318,6 +318,62 @@ The **kirigami** package also provides a unified interface for opening and closi
 
 (The **kirigami** package is highly recommended for use with outline-based modes, such as `markdown-mode`, `gfm-mode`, `org-mode`, `outline-minor-mode`, or `outline-indent-minor-mode`. This package resolves persistent inconsistencies and prevents incorrect folding behavior.)
 
+### Preventing Emacs search from matching text within folded blocks
+
+By default, search operations can match text within folded blocks, which often causes Emacs to automatically expand the hidden content.
+
+To instruct Emacs to strictly ignore invisible text during search operations, add the following configuration to your init file:
+
+```elisp
+(setq-default search-invisible nil)
+```
+
+Alternatively, to restrict this behavior to specific modes, apply a buffer-local configuration via a mode hook:
+```elisp
+(add-hook 'prog-mode-hook (lambda ()
+                            (setq-local search-invisible nil)))
+```
+
+### Integrating display-line-numbers-mode with code folding
+
+The built-in `display-line-numbers-mode` renders line numbers in the side margin of the window. By default, it uses absolute line numbering, which tracks the absolute line count in the buffer. Consequently, when a block is folded, the line numbers skip the hidden range (e.g., jumping from 15 to 120).
+
+For users who prefer **visual** line numbering, `display-line-numbers-mode` can be configured to ignore collapsed content and assign numbers sequentially based only on what is currently rendered on the screen.
+
+To implement visual line numbering as your global default, set the following variable in your configuration:
+
+```elisp
+(setq-default display-line-numbers-type 'visual)
+```
+
+Note that you must still enable the mode itself (for example, via `M-x global-display-line-numbers-mode`) for the line numbers to appear.
+
+### Maintaining independent folding states in separate windows via indirect buffers (clones)
+
+Opening the same buffer in multiple windows results in synchronized folding states; any folding or unfolding action performed in one window is immediately reflected in all others.
+
+This occurs because folding engines use buffer-local [overlays](https://www.gnu.org/software/emacs/manual/html_node/elisp/Overlays.html), which are shared across all windows associated with that specific buffer.
+
+Indirect buffers provide a robust solution to this limitation. An indirect buffer shares the underlying text of its parent buffer but maintains an independent set of overlays. This distinction allows for the maintenance of different folding configurations for the same file simultaneously.
+
+To create an indirect buffer (clone) of the current buffer in a separate window, execute:
+```
+M-x clone-indirect-buffer-other-window
+```
+
+Creating an indirect buffer provides a separate buffer object that references the same text while maintaining its own isolated set of opened/closed folds.
+
+### Discouraged Emacs Folding Engines
+
+Choosing an appropriate folding engine is important for maintaining performance and stability within Emacs. While several third-party and legacy options exist, the following packages and methods are generally discouraged in favor of more modern or integrated alternatives:
+
+- **Origami:** This package is slow and largely unmaintained. Origami uses a non-standard API and a complex implementation that frequently conflicts with other overlay-based minor modes. Its overhead can lead to performance degradation, especially when handling large buffers or deeply nested code. **(Modern alternatives to origami: [outline-indent](https://github.com/jamescherti/outline-indent.el), [treesit-fold](https://github.com/emacs-tree-sitter/treesit-fold), outline-minor-mode, hs-minor-mode)**
+- **Yafolding:** This package is also unmaintained and suffers from performance issues. **(Modern alternative to yafolding: [outline-indent](https://github.com/jamescherti/outline-indent.el))**
+- **Semantic (CEDET):** Part of the legacy CEDET suite, Semantic folding is widely regarded as heavyweight. The parsing overhead required for its operation often introduces noticeable latency, making it vastly less efficient than modern built-in alternatives like Tree-sitter. **(Modern alternatives to CEDET code folding: [treesit-fold](https://github.com/emacs-tree-sitter/treesit-fold), outline-minor-mode, hs-minor-mode, [outline-indent](https://github.com/jamescherti/outline-indent.el))**
+- **Selective Display (`set-selective-display`):** This is Emacs' oldest built-in folding method (often bound to `C-x $`). It causes unpredictable cursor jumping, and lacks any contextual awareness.
+- **Folding-mode:** This ancient package relies on explicit structural markers placed manually inside code comments (e.g., `{{{` and `}}}`). While robust for the user, markers pollute the source code with editor-specific metadata. This is heavily frowned upon in modern collaborative environments where team members use varying IDEs.
+- **Vimish-fold:** Although useful for manual, ad-hoc text folding, _vimish-fold_ is not recommended as a primary automated folding engine. Unlike Vim's `set foldmethod=marker`, the _vimish-fold_ implementation does not support recursive markers, such as `{{{` inside of `{{{`. Additionally, like _folding-mode_, _vimish-fold_ also uses markers that pollute the source code with editor-specific metadata, a practice discouraged in collaborative environments where team members use a variety of editors and IDEs.
+
 ### What code folding packages does the author use in addition to kirigami.el?
 
 In addition to the kirigami package, the author uses two reliable code folding packages:
