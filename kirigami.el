@@ -494,18 +494,22 @@ the entry is fully visible."
           ;; Climbing as long as a parent heading exists
           (catch 'done
             (outline-back-to-heading t)
-            (while (> (outline-level) 1)
-              (condition-case nil
-                  (outline-up-heading 1 t)
-                (error
-                 ;; Handle outline-before-first-heading and "Already at the top
-                 ;; of the outline"
-                 (throw 'done t)))
+            (let ((prev-point nil))
+              (while (> (outline-level) 1)
+                (setq prev-point (point))
+                (condition-case nil
+                    (outline-up-heading 1 t)
+                  (error
+                   ;; Handle outline-before-first-heading and "Already at the top
+                   ;; of the outline"
+                   (throw 'done t)))
+                (when (= prev-point (point))
+                  (throw 'done t))
 
-              (condition-case nil
-                  (outline-show-children)
-                (error
-                 (throw 'done t))))))
+                (condition-case nil
+                    (outline-show-children)
+                  (error
+                   (throw 'done t)))))))
 
         ;; Repeatedly reveal children and body until the entry is no longer
         ;; folded
@@ -516,6 +520,7 @@ the entry is fully visible."
                                     (outline-on-heading-p))))
           ;; Repeatedly reveal children and body until the entry is no longer
           ;; folded
+          ;; TODO check position change
           (catch 'done
             (while (kirigami--outline-heading-folded-p)
               (save-excursion
