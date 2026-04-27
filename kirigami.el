@@ -493,7 +493,11 @@ the entry is fully visible."
         (save-excursion
           ;; Climbing as long as a parent heading exists
           (catch 'done
-            (outline-back-to-heading t)
+            (condition-case nil
+                (outline-back-to-heading t)
+              (error
+               (throw 'done t)))
+
             (let ((prev-point nil))
               (while (> (outline-level) 1)
                 (setq prev-point (point))
