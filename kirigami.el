@@ -414,11 +414,11 @@ partially scrolled off-screen causes the heading to disappear."
               ;; Is it invisible?
               (cond ((and (bound-and-true-p outline-minor-mode)
                           (fboundp 'outline-invisible-p))
-                     (funcall 'outline-invisible-p (line-end-position)))
+                     (outline-invisible-p (line-end-position)))
 
                     ((and (derived-mode-p 'org-mode)
                           (fboundp 'org-invisible-p))
-                     (funcall 'org-invisible-p (line-end-position)))
+                     (org-invisible-p (line-end-position)))
 
                     (t
                      (invisible-p (line-end-position))))))))
