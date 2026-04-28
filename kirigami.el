@@ -128,7 +128,14 @@ the window constant."
                     ;; Restore the column because `hs-hide-all' may move
                     ;; point backward
                     ;; TODO: Emacs patch?
-                    (kirigami--call-preserve-column 'hs-hide-all))
+                    ;;
+                    (condition-case err
+                        (kirigami--call-preserve-column 'hs-hide-all)
+                      (error
+                       (unless (string-match-p "^Already at end of element"
+                                               (error-message-string err))
+                         ;; If it is a different error, re-throw it
+                         (signal (car err) (cdr err))))))
      :toggle     ,(lambda ()
                     ;; Restore the column because `hs-toggle-hiding' may move
                     ;; point backward
