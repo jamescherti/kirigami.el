@@ -104,6 +104,8 @@ These modes are included with Emacs by default. They only need to be enabled in 
 - **outline-minor-mode:** Useful for structured text and code.
   ```elisp
   (add-hook 'emacs-lisp-mode-hook #'outline-minor-mode)
+  (add-hook 'lisp-interaction-mode-hook #'hs-minor-mode) ; scratch
+  (add-hook 'lisp-mode-hook #'outline-minor-mode)
   (add-hook 'conf-mode-hook #'outline-minor-mode)
   (add-hook 'markdown-mode-hook #'outline-minor-mode)
   (add-hook 'diff-mode-hook #'outline-minor-mode)
@@ -128,6 +130,8 @@ These modes are included with Emacs by default. They only need to be enabled in 
   (add-hook 'sh-mode-hook #'hs-minor-mode) ; for bash/shell scripts
   (add-hook 'json-mode-hook #'hs-minor-mode)
   (add-hook 'lua-mode-hook #'hs-minor-mode)
+  (add-hook 'nxml-mode-hook #'hs-minor-mode)
+  (add-hook 'html-mode-hook #'hs-minor-mode) ; mhtml and html
   ```
 
 - **org-mode:** Enabled automatically when visiting `.org` files. No additional folding setup is required for Kirigami detection.
