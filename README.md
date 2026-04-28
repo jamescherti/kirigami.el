@@ -105,6 +105,8 @@ These modes are included with Emacs by default. They only need to be enabled in 
   ```elisp
   (add-hook 'emacs-lisp-mode-hook #'outline-minor-mode)
   (add-hook 'conf-mode-hook #'outline-minor-mode)
+  (add-hook 'markdown-mode-hook #'outline-minor-mode)
+  (add-hook 'diff-mode-hook #'outline-minor-mode)
   ```
 
 - **hs-minor-mode (Hide-Show):** Ideal for C-style languages and others that use braces `{}`.
