@@ -507,7 +507,8 @@ the entry is fully visible."
                  (throw 'done t)))
 
               (let ((prev-point nil))
-                (while (> (funcall outline-level) 1)
+                (while (let ((level (funcall outline-level)))
+                         (and (numberp level) (> level 1)))
                   (setq prev-point (point))
                   (condition-case nil
                       (outline-up-heading 1 t)
