@@ -499,28 +499,29 @@ the entry is fully visible."
         ;; are revealed, preventing the 'isolated item' effect.
         (save-excursion
           ;; Climbing as long as a parent heading exists
-          (catch 'done
-            (condition-case nil
-                (outline-back-to-heading t)
-              (error
-               (throw 'done t)))
+          (when outline-level
+            (catch 'done
+              (condition-case nil
+                  (outline-back-to-heading t)
+                (error
+                 (throw 'done t)))
 
-            (let ((prev-point nil))
-              (while (> (funcall outline-level) 1)
-                (setq prev-point (point))
-                (condition-case nil
-                    (outline-up-heading 1 t)
-                  (error
-                   ;; Handle outline-before-first-heading and "Already at the top
-                   ;; of the outline"
-                   (throw 'done t)))
-                (when (= prev-point (point))
-                  (throw 'done t))
+              (let ((prev-point nil))
+                (while (> (funcall outline-level) 1)
+                  (setq prev-point (point))
+                  (condition-case nil
+                      (outline-up-heading 1 t)
+                    (error
+                     ;; Handle outline-before-first-heading and
+                     ;; "Already at the top of the outline"
+                     (throw 'done t)))
+                  (when (= prev-point (point))
+                    (throw 'done t))
 
-                (condition-case nil
-                    (outline-show-children)
-                  (error
-                   (throw 'done t)))))))
+                  (condition-case nil
+                      (outline-show-children)
+                    (error
+                     (throw 'done t))))))))
 
         ;; Repeatedly reveal children and body until the entry is no longer
         ;; folded
