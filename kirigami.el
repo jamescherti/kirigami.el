@@ -425,7 +425,10 @@ partially scrolled off-screen causes the heading to disappear."
 
                     ((and (derived-mode-p 'org-mode)
                           (fboundp 'org-invisible-p))
-                     (org-invisible-p (line-end-position)))
+                     (if (fboundp 'org-fold-folded-p)
+                         (org-fold-folded-p (line-end-position))
+                       (when (fboundp 'org-invisible-p)
+                         (org-invisible-p (line-end-position)))))
 
                     (t
                      (invisible-p (line-end-position))))))))
