@@ -494,39 +494,9 @@ the entry is fully visible."
            (fboundp 'outline-show-children)
            (fboundp 'outline-up-heading)
            (fboundp 'outline-show-children)
-           (fboundp 'outline-level))
+           (fboundp 'outline-level)
+           (fboundp 'outline-show-entry))
       (save-match-data
-        ;; Workaround for an outline-mode limitation: when jumping via imenu or
-        ;; search, sibling headings above the current one and at the same level
-        ;; often remain hidden. This ensures all sub-items at the current level
-        ;; are revealed, preventing the 'isolated item' effect.
-        (save-excursion
-          ;; Climbing as long as a parent heading exists
-          (when outline-level
-            (catch 'done
-              (condition-case nil
-                  (outline-back-to-heading t)
-                (error
-                 (throw 'done t)))
-
-              (let ((prev-point nil))
-                (while (let ((level (funcall outline-level)))
-                         (and (numberp level) (> level 1)))
-                  (setq prev-point (point))
-                  (condition-case nil
-                      (outline-up-heading 1 t)
-                    (error
-                     ;; Handle outline-before-first-heading and
-                     ;; "Already at the top of the outline"
-                     (throw 'done t)))
-                  (when (= prev-point (point))
-                    (throw 'done t))
-
-                  (condition-case nil
-                      (outline-show-children)
-                    (error
-                     (throw 'done t))))))))
-
         ;; Repeatedly reveal children and body until the entry is no longer
         ;; folded
         (let ((on-invisible-heading (when (outline-on-heading-p t)
@@ -562,7 +532,48 @@ the entry is fully visible."
           ;; it. Otherwise, leave the fold open. This allows the user to decide
           ;; whether to expand the content under the cursor.
           (when (and on-invisible-heading (not on-visible-heading))
-            (kirigami--outline-legacy-hide-subtree))))
+            (kirigami--outline-legacy-hide-subtree)))
+
+        ;; Workaround for an outline-mode limitation: when jumping via imenu or
+        ;; search, sibling headings above the current one and at the same level
+        ;; often remain hidden. This ensures all sub-items at the current level
+        ;; are revealed, preventing the 'isolated item' effect.
+        (save-excursion
+          ;; Climbing as long as a parent heading exists
+          (when outline-level
+            (catch 'done
+              (condition-case nil
+                  (outline-back-to-heading t)
+                (error
+                 (throw 'done t)))
+
+              (let ((prev-point nil))
+                (while (let ((level (funcall outline-level)))
+                         (and (numberp level) (> level 1)))
+                  (setq prev-point (point))
+                  (condition-case nil
+                      (outline-up-heading 1 t)
+                    (error
+                     ;; Handle outline-before-first-heading and
+                     ;; "Already at the top of the outline"
+                     (throw 'done t)))
+                  (when (= prev-point (point))
+                    (throw 'done t))
+
+                  (condition-case nil
+                      (outline-show-children)
+                    (error
+                     (throw 'done t)))
+
+                  ;; This fixes, for example, `outline-minor-mode' +
+                  ;; 'markdown-mode'.
+                  ;; The build status isn't opened without `outline-show-entry'
+                  ;;   # kirigami.el - A Unified Method to Fold and Unfold...
+                  ;;   ![Build Status](https://domain.com/test)
+                  (condition-case nil
+                      (outline-show-entry)
+                    (error
+                     (throw 'done t)))))))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--empty-subtree-p ()
