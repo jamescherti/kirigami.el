@@ -497,43 +497,6 @@ the entry is fully visible."
            (fboundp 'outline-level)
            (fboundp 'outline-show-entry))
       (save-match-data
-        ;; Repeatedly reveal children and body until the entry is no longer
-        ;; folded
-        (let ((on-invisible-heading (when (outline-on-heading-p t)
-                                      (outline-invisible-p)))
-              (on-visible-heading (save-excursion
-                                    (goto-char (line-beginning-position))
-                                    (outline-on-heading-p))))
-          ;; Repeatedly reveal children and body until the entry is no longer
-          ;; folded
-          ;; TODO check position change
-          (catch 'done
-            (while (kirigami--outline-heading-folded-p)
-              (save-excursion
-                (condition-case nil
-                    (outline-back-to-heading)
-                  (error
-                   (throw 'done t)))
-
-                ;; Ignore errors here so that if show-children fails, the loop
-                ;; continues and reveals the body text via legacy-show-entry.
-                ;; This handles cases where structure is inconsistent.
-                (condition-case nil
-                    (outline-show-children)
-                  (error
-                   nil))
-
-                (condition-case nil
-                    (kirigami--outline-legacy-show-entry)
-                  (error
-                   (throw 'done t))))))
-
-          ;; If the header was previously hidden, hide the subtree to collapse
-          ;; it. Otherwise, leave the fold open. This allows the user to decide
-          ;; whether to expand the content under the cursor.
-          (when (and on-invisible-heading (not on-visible-heading))
-            (kirigami--outline-legacy-hide-subtree)))
-
         ;; Workaround for an outline-mode limitation: when jumping via imenu or
         ;; search, sibling headings above the current one and at the same level
         ;; often remain hidden. This ensures all sub-items at the current level
@@ -573,7 +536,44 @@ the entry is fully visible."
                   (condition-case nil
                       (outline-show-entry)
                     (error
-                     (throw 'done t)))))))))
+                     (throw 'done t))))))))
+
+        ;; Repeatedly reveal children and body until the entry is no longer
+        ;; folded
+        (let ((on-invisible-heading (when (outline-on-heading-p t)
+                                      (outline-invisible-p)))
+              (on-visible-heading (save-excursion
+                                    (goto-char (line-beginning-position))
+                                    (outline-on-heading-p))))
+          ;; Repeatedly reveal children and body until the entry is no longer
+          ;; folded
+          ;; TODO check position change
+          (catch 'done
+            (while (kirigami--outline-heading-folded-p)
+              (save-excursion
+                (condition-case nil
+                    (outline-back-to-heading)
+                  (error
+                   (throw 'done t)))
+
+                ;; Ignore errors here so that if show-children fails, the loop
+                ;; continues and reveals the body text via legacy-show-entry.
+                ;; This handles cases where structure is inconsistent.
+                (condition-case nil
+                    (outline-show-children)
+                  (error
+                   nil))
+
+                (condition-case nil
+                    (kirigami--outline-legacy-show-entry)
+                  (error
+                   (throw 'done t))))))
+
+          ;; If the header was previously hidden, hide the subtree to collapse
+          ;; it. Otherwise, leave the fold open. This allows the user to decide
+          ;; whether to expand the content under the cursor.
+          (when (and on-invisible-heading (not on-visible-heading))
+            (kirigami--outline-legacy-hide-subtree))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--empty-subtree-p ()
