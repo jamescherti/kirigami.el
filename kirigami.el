@@ -477,6 +477,66 @@ This is the Emacs version of `outline-hide-subtree'."
         (outline-toggle-children)
       (kirigami--outline-ensure-window-start-heading-visible)))))
 
+(defun kirigami--outline-show-entry-and-parents ()
+  "Reveal the current entry and its parent hierarchy.
+This command ensures that the current entry, all of its ancestor
+headings, and their immediate sibling headings are visible.
+
+The function iteratively unfolds the children and body of the target
+entry until it is fully revealed. If invoked when the point is inside
+a completely hidden subtree, it manages the visibility state to avoid
+leaving the buffer in an inconsistent layout. This guarantees a safe
+and predictable visual expansion."
+  (interactive)
+  (when (and (fboundp 'outline-back-to-heading)
+             (fboundp 'outline-show-children)
+             (fboundp 'outline-show-entry))
+    ;; Wrap in `save-match-data' because outline functions use regular
+    ;; expressions. Without this, calling `outline-show-entry-and-parents'
+    ;; programmatically would clobber the caller's match data, leading to
+    ;; subtle, hard-to-trace bugs.
+    (save-match-data
+      ;; Repeatedly expand the outline structure at point from the outside
+      ;; in until the target text is fully visible.
+      ;;
+      ;; Think of this block as manually opening nested folds:
+      ;; - It checks whether the heading at point is folded.
+      ;; - If it is folded, it moves backward to that parent heading.
+      ;; - It opens the heading to reveal its text and subheadings.
+      ;; - It repeats this process layer by layer down to the target.
+      (let (heading-point
+            prior-heading-point)
+        (while (condition-case nil
+                   (save-excursion
+                     ;; Navigate backward to the nearest visible heading
+                     (outline-back-to-heading)
+                     (setq heading-point (point))
+                     ;; Break the loop if we stop making progress,
+                     ;; preventing infinite recursion
+                     (if (eq heading-point prior-heading-point)
+                         ;; Break out of the loop
+                         nil
+                       (setq prior-heading-point heading-point)
+                       ;; Check if the heading is folded by inspecting the
+                       ;; end of the line
+                       (when (invisible-p (if (fboundp 'pos-eol)
+                                              (pos-eol)
+                                            (line-end-position)))
+                         ;; Ignore errors to guarantee the target entry is
+                         ;; still revealed via `outline-show-entry' even
+                         ;; if a buggy third-party `outline-level'
+                         ;; function fails during child expansion.
+                         (ignore-errors (outline-show-children))
+
+                         ;; Show the body directly following this heading
+                         (outline-show-entry)
+
+                         ;; Return t to continue drilling down to the next
+                         ;; layer of the outline hierarchy
+                         t)))
+                 (outline-before-first-heading
+                  nil)))))))
+
 (defun kirigami--outline-show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
 Repeatedly reveal children and body until the entry is no longer folded.
@@ -538,36 +598,12 @@ the entry is fully visible."
                     (error
                      (throw 'done t))))))))
 
-        ;; Repeatedly reveal children and body until the entry is no longer
-        ;; folded
         (let ((on-invisible-heading (when (outline-on-heading-p t)
                                       (outline-invisible-p)))
               (on-visible-heading (save-excursion
                                     (goto-char (line-beginning-position))
                                     (outline-on-heading-p))))
-          ;; Repeatedly reveal children and body until the entry is no longer
-          ;; folded
-          ;; TODO check position change
-          (catch 'done
-            (while (kirigami--outline-heading-folded-p)
-              (save-excursion
-                (condition-case nil
-                    (outline-back-to-heading)
-                  (error
-                   (throw 'done t)))
-
-                ;; Ignore errors here so that if show-children fails, the loop
-                ;; continues and reveals the body text via legacy-show-entry.
-                ;; This handles cases where structure is inconsistent.
-                (condition-case nil
-                    (outline-show-children)
-                  (error
-                   nil))
-
-                (condition-case nil
-                    (kirigami--outline-legacy-show-entry)
-                  (error
-                   (throw 'done t))))))
+          (kirigami--outline-show-entry-and-parents)
 
           ;; If the header was previously hidden, hide the subtree to collapse
           ;; it. Otherwise, leave the fold open. This allows the user to decide
