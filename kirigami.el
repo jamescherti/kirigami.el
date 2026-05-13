@@ -562,41 +562,33 @@ the entry is fully visible."
         ;; often remain hidden. This ensures all sub-items at the current level
         ;; are revealed, preventing the 'isolated item' effect.
         (save-excursion
-          ;; Climbing as long as a parent heading exists
-          (when outline-level
-            (catch 'done
-              (condition-case nil
-                  (outline-back-to-heading t)
-                (error
-                 (throw 'done t)))
+          (catch 'done
+            (condition-case nil
+                (outline-back-to-heading t)
+              (error (throw 'done t)))
 
-              (let ((prev-point nil))
-                (while (let ((level (funcall outline-level)))
-                         (and (numberp level) (> level 1)))
-                  (setq prev-point (point))
+            (let ((current-level (funcall outline-level)))
+              ;; Only attempt to climb if we are deeper than level 1
+              (while (and (numberp current-level) (> current-level 1))
+                (let ((prev-point (point)))
                   (condition-case nil
+                      ;; invisible-ok is t
                       (outline-up-heading 1 t)
-                    (error
-                     ;; Handle outline-before-first-heading and
-                     ;; "Already at the top of the outline"
-                     (throw 'done t)))
-                  (when (= prev-point (point))
-                    (throw 'done t))
+                    (error (throw 'done t)))
+
+                  ;; If point didn't move or level didn't decrease, we've hit
+                  ;; a wall or a sibling jump
+                  (let ((new-level (funcall outline-level)))
+                    (when (or (= prev-point (point))
+                              (>= new-level current-level))
+                      (throw 'done t))
+                    (setq current-level new-level))
 
                   (condition-case nil
-                      (outline-show-children)
-                    (error
-                     (throw 'done t)))
-
-                  ;; This fixes, for example, `outline-minor-mode' +
-                  ;; 'markdown-mode'.
-                  ;; The build status isn't opened without `outline-show-entry'
-                  ;;   # kirigami.el - A Unified Method to Fold and Unfold...
-                  ;;   ![Build Status](https://domain.com/test)
-                  (condition-case nil
-                      (outline-show-entry)
-                    (error
-                     (throw 'done t))))))))
+                      (progn
+                        (outline-show-children)
+                        (outline-show-entry))
+                    (error (throw 'done t))))))))
 
         (let ((on-invisible-heading (when (outline-on-heading-p t)
                                       (outline-invisible-p)))
