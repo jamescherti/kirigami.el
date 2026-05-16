@@ -843,7 +843,15 @@ cursor."
 
    ((and kirigami-enhance-outline
          (fboundp 'kirigami--outline-hide-subtree))
-    (kirigami--outline-hide-subtree))
+    (if (and (fboundp 'outline-back-to-heading)
+             (save-excursion
+               (ignore-errors
+                 (outline-back-to-heading)
+                 (< (point) (window-start)))))
+        (kirigami--save-window-start
+          (kirigami--save-window-scroll
+            (kirigami--outline-hide-subtree)))
+      (kirigami--outline-hide-subtree)))
 
    ((fboundp 'outline-hide-subtree)
     (unwind-protect
@@ -1033,15 +1041,7 @@ See also `kirigami-close-folds'."
 See also `kirigami-open-fold'."
   (interactive)
   (kirigami--optimize
-    (kirigami-fold-action kirigami-fold-list :close)
-
-    ;; TODO Only restore visual position when the heading < window-start
-    ;; (if kirigami-preserve-visual-position
-    ;;     (kirigami--save-window-start
-    ;;       (kirigami--save-window-scroll
-    ;;         (kirigami-fold-action kirigami-fold-list :close)))
-    ;;   (kirigami-fold-action kirigami-fold-list :close))
-    ))
+    (kirigami-fold-action kirigami-fold-list :close)))
 
 ;;;###autoload
 (defun kirigami-toggle-fold ()
