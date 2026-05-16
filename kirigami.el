@@ -374,8 +374,8 @@ was blocked or failed."
 
 This function iterates through every window displaying the current buffer. It
 checks if the text at the top of the window (`window-start') is currently hidden
-inside a folded outline subtree. If so, it resets the window start to the parent
-heading's position to make it visible.
+inside a folded outline subtree. If so, it resets the window start to the
+position of the parent heading to make it visible.
 
 This fixes an issue in `outline-mode', `outline-minor-mode', `org-mode',
 `markdown-mode', `outline-indent-minor-mode'... where folding a subtree that is
