@@ -302,7 +302,20 @@ to the following keywords: :open-all, :close-all, :toggle, :open, :open-rec, or
 
 The return values of functions in this hook are ignored.")
 
+(defvar kirigami-gc-threshold (* 128 1024 1024)
+  "GC threshold for temporary increase.")
+
+(defvar kirigami-gc-percentage 0.3
+  "GC percentage for temporary increase.")
+
 ;;; Internal functions
+
+(defmacro kirigami--with-increased-gc (&rest body)
+  "Evaluate BODY with temporarily increased garbage collection limits."
+  (declare (indent 0) (debug t))
+  `(let ((gc-cons-threshold (max gc-cons-threshold kirigami-gc-threshold))
+         (gc-cons-percentage (max gc-cons-percentage kirigami-gc-percentage)))
+     ,@body))
 
 (defun kirigami--call-preserve-column (fn)
   "Call FN and restore point to the original column when possible."
@@ -675,8 +688,8 @@ inside the fold)."
                (throw 'quit-function t)))
 
             (let ((heading-point (point)))
-              ;; If the current heading is folded, or if it contains no content, move
-              ;; to the previous higher-level heading.
+              ;; If the current heading is folded, or if it contains no content,
+              ;; move to the previous higher-level heading.
               (catch 'done
                 (when (or (kirigami--outline-heading-folded-p)  ; Folded?
                           ;; Or fold without any content
@@ -929,75 +942,83 @@ cursor."
 
 (defun kirigami-close-folds-except-current ()
   "Close all folds except the current one."
-  (let ((point (point)))
-    (kirigami-close-folds)
-    (goto-char point)
-    (kirigami-open-fold)))
+  (kirigami--with-increased-gc
+    (let ((point (point)))
+      (kirigami-close-folds)
+      (goto-char point)
+      (kirigami-open-fold))))
 
 ;;;###autoload
 (defun kirigami-open-fold ()
   "Open fold at point.
 See also `kirigami-close-fold'."
   (interactive)
-  (kirigami-fold-action kirigami-fold-list :open))
+  (kirigami--with-increased-gc
+    (kirigami-fold-action kirigami-fold-list :open)))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
   "Open fold at point recursively.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (if kirigami-preserve-visual-position
-      (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (kirigami-fold-action kirigami-fold-list :open-rec)))
-    (kirigami-fold-action kirigami-fold-list :open-rec)))
+  (kirigami--with-increased-gc
+    (if kirigami-preserve-visual-position
+        (kirigami--save-window-hscroll
+          (kirigami--save-window-start
+            (kirigami-fold-action kirigami-fold-list :open-rec)))
+      (kirigami-fold-action kirigami-fold-list :open-rec))))
 
 ;;;###autoload
 (defun kirigami-open-folds ()
   "Open all folds.
 See also `kirigami-close-folds'."
   (interactive)
-  (if kirigami-preserve-visual-position
-      (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (kirigami-fold-action kirigami-fold-list :open-all)))
-    (kirigami-fold-action kirigami-fold-list :open-all)))
+  (kirigami--with-increased-gc
+    (if kirigami-preserve-visual-position
+        (kirigami--save-window-hscroll
+          (kirigami--save-window-start
+            (kirigami-fold-action kirigami-fold-list :open-all)))
+      (kirigami-fold-action kirigami-fold-list :open-all))))
 
 ;;;###autoload
 (defun kirigami-close-fold ()
   "Close fold at point.
 See also `kirigami-open-fold'."
   (interactive)
-  (kirigami-fold-action kirigami-fold-list :close)
+  (kirigami--with-increased-gc
+    (kirigami-fold-action kirigami-fold-list :close)
 
-  ;; TODO Only restore visual position when the heading < window-start
-  ;; (if kirigami-preserve-visual-position
-  ;;     (kirigami--save-window-hscroll
-  ;;       (kirigami--save-window-start
-  ;;         (kirigami-fold-action kirigami-fold-list :close)))
-  ;;   (kirigami-fold-action kirigami-fold-list :close))
-  )
+    ;; TODO Only restore visual position when the heading < window-start
+    ;; (if kirigami-preserve-visual-position
+    ;;     (kirigami--save-window-hscroll
+    ;;       (kirigami--save-window-start
+    ;;         (kirigami-fold-action kirigami-fold-list :close)))
+    ;;   (kirigami-fold-action kirigami-fold-list :close))
+    ))
 
 ;;;###autoload
 (defun kirigami-toggle-fold ()
   "Open or close a fold under point.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (if kirigami-preserve-visual-position
-      (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (kirigami-fold-action kirigami-fold-list :toggle)))
-    (kirigami-fold-action kirigami-fold-list :toggle)))
+  (kirigami--with-increased-gc
+    (if kirigami-preserve-visual-position
+        (kirigami--save-window-hscroll
+          (kirigami--save-window-start
+            (kirigami-fold-action kirigami-fold-list :toggle)))
+      (kirigami-fold-action kirigami-fold-list :toggle))))
 
 ;;;###autoload
 (defun kirigami-close-folds ()
   "Close all folds."
   (interactive)
-  (if kirigami-preserve-visual-position
-      (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (kirigami-fold-action kirigami-fold-list :close-all)))
-    (kirigami-fold-action kirigami-fold-list :close-all)))
+  (kirigami--with-increased-gc
+    (if kirigami-preserve-visual-position
+        (kirigami--save-window-hscroll
+          (kirigami--save-window-start
+            (kirigami-fold-action kirigami-fold-list :close-all)))
+      (kirigami-fold-action kirigami-fold-list :close-all))))
 
 (provide 'kirigami)
+
 ;;; kirigami.el ends here
