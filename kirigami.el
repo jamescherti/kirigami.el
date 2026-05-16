@@ -537,6 +537,22 @@ and predictable visual expansion."
                  (outline-before-first-heading
                   nil)))))))
 
+(defun kirigami--outline-on-heading-p ()
+  "Return t if point is on a visible outline heading."
+  (save-excursion
+    (vertical-motion 0)
+    (cond
+     ((and (derived-mode-p 'org-mode)
+           (fboundp 'org-at-heading-p))
+      (org-at-heading-p))
+
+     ((and (derived-mode-p 'org-mode)
+           (fboundp 'org-on-heading-p))
+      (org-on-heading-p))
+
+     ((fboundp 'outline-on-heading-p)
+      (outline-on-heading-p)))))
+
 (defun kirigami--outline-show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
 Repeatedly reveal children and body until the entry is no longer folded.
@@ -556,15 +572,28 @@ the entry is fully visible."
            (fboundp 'outline-level)
            (fboundp 'outline-show-entry))
       (save-match-data
-        (let ((on-invisible-heading (when (outline-on-heading-p t)
-                                      (outline-invisible-p)))
-              (on-visible-heading (save-excursion
-                                    (goto-char (line-beginning-position))
-                                    (outline-on-heading-p))))
-          ;; Workaround for an outline-mode limitation: when jumping via imenu or
-          ;; search, sibling headings above the current one and at the same level
-          ;; often remain hidden. This ensures all sub-items at the current level
-          ;; are revealed, preventing the 'isolated item' effect.
+        (let* (;; Evaluate if the point is on an outline heading and whether
+               ;; that heading is currently invisible.
+               ;;
+               ;; If the cursor is on an invisible subheading, kirigami assumes
+               ;; the user did not intentionally target it for expansion.
+               ;; Consequently, kirigami will close that specific subheading
+               ;; after the reveal process.
+               ;;
+               ;; A heading fold is left open by kirigami only if the user
+               ;; triggered the action while the cursor was on a visible
+               ;; heading.
+               (on-heading (kirigami--outline-on-heading-p))
+               (on-invisible-subheading (and on-heading
+                                             (outline-on-heading-p t)
+                                             (if (and (derived-mode-p 'org-mode)
+                                                      (fboundp 'org-invisible-p))
+                                                 (org-invisible-p)
+                                               (outline-invisible-p)))))
+          ;; Workaround for an outline-mode issue: when jumping via imenu or
+          ;; search, sibling headings above the current one and at the same
+          ;; level often remain hidden. This ensures all sub-items at the
+          ;; current level are revealed, preventing the 'isolated item' effect.
           (save-excursion
             (catch 'done
               (condition-case nil
@@ -599,7 +628,7 @@ the entry is fully visible."
           ;; If the header was previously hidden, hide the subtree to collapse
           ;; it. Otherwise, leave the fold open. This allows the user to decide
           ;; whether to expand the content under the cursor.
-          (when (and on-invisible-heading (not on-visible-heading))
+          (when on-invisible-subheading
             (kirigami--outline-legacy-hide-subtree))))
     (error "Required outline functions are undefined")))
 
@@ -625,7 +654,7 @@ the entry is fully visible."
           (= start end))))))
 
 (defun kirigami--outline-hide-subtree ()
-  "Close the current heading's subtree.
+  "Close the current heading subtree.
 
 If the current heading is folded or contains no content, locate the previous
 higher-level heading and close its subtree instead.
