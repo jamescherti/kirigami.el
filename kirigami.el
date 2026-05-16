@@ -6,7 +6,7 @@
 ;; Version: 1.0.5
 ;; URL: https://github.com/jamescherti/kirigami.el
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "26.3"))
+;; Package-Requires: ((emacs "26.1"))
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -638,46 +638,49 @@ the entry is fully visible."
                (on-invisible-subheading (and on-heading
                                              (outline-on-heading-p t)
                                              (kirigami--outline-invisible-p))))
-          ;; Workaround for an outline-mode issue: when jumping via imenu or
-          ;; search, sibling headings above the current one and at the same
-          ;; level often remain hidden. This ensures all sub-items at the
-          ;; current level are revealed, preventing the 'isolated item' effect.
-          (save-excursion
-            (catch 'done
-              (condition-case nil
-                  (outline-back-to-heading t)
-                (error (throw 'done t)))
+          (unwind-protect
+              (progn
+                (kirigami--outline-show-entry-and-parents)
 
-              (let ((current-level (funcall outline-level)))
-                ;; Only attempt to climb if we are deeper than level 1
-                (while (and (numberp current-level) (> current-level 1))
-                  (let ((prev-point (point)))
-                    (condition-case nil
-                        ;; invisible-ok is t
-                        (outline-up-heading 1 t)
-                      (error (throw 'done t)))
+                ;; If the header was previously hidden, hide the subtree to
+                ;; collapse it. Otherwise, leave the fold open. This allows the
+                ;; user to decide whether to expand the content under the
+                ;; cursor.
+                (when on-invisible-subheading
+                  (kirigami--outline-legacy-hide-subtree)))
+            ;; Workaround for an outline-mode issue: when jumping via imenu or
+            ;; search, sibling headings above the current one and at the same
+            ;; level often remain hidden. This ensures all sub-items at the
+            ;; current level are revealed, preventing the 'isolated item'
+            ;; effect.
+            (save-excursion
+              (catch 'done
+                (condition-case nil
+                    (outline-back-to-heading t)
+                  (error (throw 'done t)))
 
-                    ;; If point didn't move or level didn't decrease, we've hit
-                    ;; a wall or a sibling jump
-                    (let ((new-level (funcall outline-level)))
-                      (when (or (= prev-point (point))
-                                (>= new-level current-level))
-                        (throw 'done t))
-                      (setq current-level new-level))
+                (let ((current-level (funcall outline-level)))
+                  ;; Only attempt to climb if we are deeper than level 1
+                  (while (and (numberp current-level) (> current-level 1))
+                    (let ((prev-point (point)))
+                      (condition-case nil
+                          ;; invisible-ok is t
+                          (outline-up-heading 1 t)
+                        (error (throw 'done t)))
 
-                    (condition-case nil
-                        (progn
-                          (outline-show-children)
-                          (outline-show-entry))
-                      (error (throw 'done t))))))))
+                      ;; If point didn't move or level didn't decrease, we've
+                      ;; hit a wall or a sibling jump
+                      (let ((new-level (funcall outline-level)))
+                        (when (or (= prev-point (point))
+                                  (>= new-level current-level))
+                          (throw 'done t))
+                        (setq current-level new-level))
 
-          (kirigami--outline-show-entry-and-parents)
-
-          ;; If the header was previously hidden, hide the subtree to collapse
-          ;; it. Otherwise, leave the fold open. This allows the user to decide
-          ;; whether to expand the content under the cursor.
-          (when on-invisible-subheading
-            (kirigami--outline-legacy-hide-subtree))))
+                      (condition-case nil
+                          (progn
+                            (outline-show-children)
+                            (outline-show-entry))
+                        (error (throw 'done t)))))))))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--empty-subtree-p ()
