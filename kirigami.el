@@ -968,11 +968,15 @@ cursor."
 See also `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :open)))
-      (kirigami-fold-action kirigami-fold-list :open))))
+    (kirigami-fold-action kirigami-fold-list :open)
+
+    ;; TODO fix
+    ;; (if kirigami-preserve-visual-position
+    ;;     (kirigami--save-window-start
+    ;;       (kirigami--save-window-scroll
+    ;;         (kirigami-fold-action kirigami-fold-list :open)))
+    ;;   (kirigami-fold-action kirigami-fold-list :open))
+    ))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
