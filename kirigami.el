@@ -310,11 +310,12 @@ The return values of functions in this hook are ignored.")
 
 ;;; Internal functions
 
-(defmacro kirigami--with-increased-gc (&rest body)
+(defmacro kirigami--optimize (&rest body)
   "Evaluate BODY with temporarily increased garbage collection limits."
   (declare (indent 0) (debug t))
   `(let ((gc-cons-threshold (max gc-cons-threshold kirigami-gc-threshold))
-         (gc-cons-percentage (max gc-cons-percentage kirigami-gc-percentage)))
+         (gc-cons-percentage (max gc-cons-percentage kirigami-gc-percentage))
+         (inhibit-redisplay t))
      ,@body))
 
 (defun kirigami--call-preserve-column (fn)
@@ -369,6 +370,25 @@ was blocked or failed."
             (run-hook-with-args 'kirigami-post-action-functions action)
             result))))))
 
+(defun kirigami--outline-invisible-p (&optional pos)
+  "Non-nil if the character after POS has outline invisible property.
+If POS is nil, use point instead."
+  (let ((position (or pos (point))))
+    (cond
+     ((and (derived-mode-p 'org-mode)
+           (fboundp 'org-fold-folded-p))
+      (org-fold-folded-p position))
+
+     ((and (derived-mode-p 'org-mode)
+           (fboundp 'org-invisible-p))
+      (org-invisible-p position t))
+
+     ((fboundp 'outline-invisible-p)
+      (outline-invisible-p position))
+
+     (t
+      (invisible-p position)))))
+
 (defun kirigami--outline-ensure-window-start-heading-visible ()
   "Adjust `window-start' in all windows of the current buffer to fix issues.
 
@@ -385,6 +405,7 @@ partially scrolled off-screen causes the heading to disappear."
              (fboundp 'outline-on-heading-p)
              (fboundp 'outline-invisible-p)
              (fboundp 'outline-back-to-heading)
+             (fboundp 'outline-up-heading)
              (or (derived-mode-p 'outline-mode)
                  (bound-and-true-p outline-minor-mode)))
     ;; We are using save-match-data because inside outline-back-to-heading,
@@ -394,20 +415,31 @@ partially scrolled off-screen causes the heading to disappear."
     (save-match-data
       (dolist (current-window (get-buffer-window-list (current-buffer) nil t))
         (when (window-live-p current-window)
-          (let ((heading-point (save-excursion
-                                 (progn
-                                   ;; Explicitly pass current-window to
-                                   ;; window-start
-                                   (goto-char (window-start current-window))
-                                   (when (outline-invisible-p (point))
-                                     (let ((result nil))
-                                       (condition-case nil
-                                           (progn
-                                             (outline-back-to-heading)
-                                             (setq result (point)))
-                                         (error
-                                          nil))
-                                       result))))))
+          (let ((heading-point
+                 (save-excursion
+                   (progn
+                     ;; Explicitly pass current-window to
+                     ;; window-start
+                     (goto-char (window-start current-window))
+                     ;; Use native invisible-p to handle org-mode
+                     ;; and outline reliably
+                     (when (kirigami--outline-invisible-p (point))
+                       (let ((result nil))
+                         (condition-case nil
+                             (progn
+                               (outline-back-to-heading)
+                               ;; If the heading itself is also
+                               ;; hidden, climb the hierarchy
+                               ;; until we find a visible parent
+                               ;; heading.
+                               (while
+                                   (and (> (point) (point-min))
+                                        (kirigami--outline-invisible-p (point)))
+                                 (outline-up-heading 1 t))
+                               (setq result (point)))
+                           (error
+                            nil))
+                         result))))))
             ;; Ensure folded headings remain visible after hiding subtrees.
             ;; Fixes a bug in outline and Evil where headings could scroll
             ;; out of view when their subtrees were folded.
@@ -432,19 +464,7 @@ partially scrolled off-screen causes the heading to disappear."
                  (throw 'done t)))
 
               ;; Is it invisible?
-              (cond ((and (bound-and-true-p outline-minor-mode)
-                          (fboundp 'outline-invisible-p))
-                     (outline-invisible-p (line-end-position)))
-
-                    ((and (derived-mode-p 'org-mode)
-                          (fboundp 'org-invisible-p))
-                     (if (fboundp 'org-fold-folded-p)
-                         (org-fold-folded-p (line-end-position))
-                       (when (fboundp 'org-invisible-p)
-                         (org-invisible-p (line-end-position)))))
-
-                    (t
-                     (invisible-p (line-end-position))))))))
+              (kirigami--outline-invisible-p (line-end-position))))))
     (error "Required outline functions are undefined")))
 
 (defun kirigami--outline-legacy-show-entry ()
@@ -599,10 +619,7 @@ the entry is fully visible."
                (on-heading (kirigami--outline-on-heading-p))
                (on-invisible-subheading (and on-heading
                                              (outline-on-heading-p t)
-                                             (if (and (derived-mode-p 'org-mode)
-                                                      (fboundp 'org-invisible-p))
-                                                 (org-invisible-p)
-                                               (outline-invisible-p)))))
+                                             (kirigami--outline-invisible-p))))
           ;; Workaround for an outline-mode issue: when jumping via imenu or
           ;; search, sibling headings above the current one and at the same
           ;; level often remain hidden. This ensures all sub-items at the
@@ -884,152 +901,152 @@ cursor."
       (kirigami--outline-ensure-window-start-heading-visible)))))
 
 (defun kirigami--outline-close-all ()
-  "Close all `outline' folds and ensure the first heading remains visible."
-  (cond
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-close-folds))
-    (call-interactively 'outline-indent-close-folds))
+"Close all `outline' folds and ensure the first heading remains visible."
+(cond
+ ((and (bound-and-true-p outline-indent-minor-mode)
+       (fboundp 'outline-indent-close-folds))
+  (call-interactively 'outline-indent-close-folds))
 
-   ((or (fboundp 'hide-sublevels)
-        (fboundp 'outline-hide-sublevels))
-    (if kirigami-enhance-outline
-        (when (and (fboundp 'outline-on-heading-p)
-                   (fboundp 'outline-next-visible-heading)
-                   (fboundp 'outline-next-heading))
-          ;; When `kirigami-enhance-outline' is non-nil
-          (unwind-protect
-              ;; TODO send a patch to Emacs
-              ;; In modes like markdown-mode, it is common for a document to
-              ;; start with a deeply nested heading (e.g., ###) without any
-              ;; parent # or ## headings present. The standard
-              ;; outline-hide-sublevels command often fails to collapse the
-              ;; buffer correctly in these cases if it defaults to a level that
-              ;; does not exist or treats level 0 incorrectly.
-              (save-excursion
-                (goto-char (point-min))
+ ((or (fboundp 'hide-sublevels)
+      (fboundp 'outline-hide-sublevels))
+  (if kirigami-enhance-outline
+      (when (and (fboundp 'outline-on-heading-p)
+                 (fboundp 'outline-next-visible-heading)
+                 (fboundp 'outline-next-heading))
+        ;; When `kirigami-enhance-outline' is non-nil
+        (unwind-protect
+            ;; TODO send a patch to Emacs
+            ;; In modes like markdown-mode, it is common for a document to
+            ;; start with a deeply nested heading (e.g., ###) without any
+            ;; parent # or ## headings present. The standard
+            ;; outline-hide-sublevels command often fails to collapse the
+            ;; buffer correctly in these cases if it defaults to a level that
+            ;; does not exist or treats level 0 incorrectly.
+            (save-excursion
+              (goto-char (point-min))
 
-                ;; Handle preamble (if the file doesn't start with a heading)
-                (unless (outline-on-heading-p)
-                  (outline-next-heading))
+              ;; Handle preamble (if the file doesn't start with a heading)
+              (unless (outline-on-heading-p)
+                (outline-next-heading))
 
-                ;; Collapse every top-level heading found
-                (let ((done nil))
-                  (while (and (not done)
-                              (not (eobp))
-                              (outline-on-heading-p))
-                    (let ((current-point (point)))
-                      ;; Hide the subtree
-                      (condition-case nil
-                          (kirigami--outline-hide-subtree)
-                        (error
-                         nil))
+              ;; Collapse every top-level heading found
+              (let ((done nil))
+                (while (and (not done)
+                            (not (eobp))
+                            (outline-on-heading-p))
+                  (let ((current-point (point)))
+                    ;; Hide the subtree
+                    (condition-case nil
+                        (kirigami--outline-hide-subtree)
+                      (error
+                       nil))
 
-                      ;; Try to move to the next visible heading.
-                      (progn
-                        (outline-next-visible-heading 1)
-                        ;; SAFETY CHECK: If point did not move forward, we
-                        ;; must stop. This catches cases where the function
-                        ;; returns successfully but fails to advance (e.g., at
-                        ;; the last heading in some modes).
-                        (when (<= (point) current-point)
-                          (setq done t)))))))
-            (kirigami--outline-ensure-window-start-heading-visible)))
+                    ;; Try to move to the next visible heading.
+                    (progn
+                      (outline-next-visible-heading 1)
+                      ;; SAFETY CHECK: If point did not move forward, we
+                      ;; must stop. This catches cases where the function
+                      ;; returns successfully but fails to advance (e.g., at
+                      ;; the last heading in some modes).
+                      (when (<= (point) current-point)
+                        (setq done t)))))))
+          (kirigami--outline-ensure-window-start-heading-visible)))
 
-      ;; When `kirigami-enhance-outline' is nil
-      (cond
-       ((fboundp 'outline-hide-sublevels)
-        (outline-hide-sublevels 1))
-       ((fboundp 'hide-sublevels)
-        (hide-sublevels 1)))))))
+    ;; When `kirigami-enhance-outline' is nil
+    (cond
+     ((fboundp 'outline-hide-sublevels)
+      (outline-hide-sublevels 1))
+     ((fboundp 'hide-sublevels)
+      (hide-sublevels 1)))))))
 
 ;;; Functions: open/close folds
 
 (defun kirigami-close-folds-except-current ()
   "Close all folds except the current one."
-  (kirigami--with-increased-gc
-    (let ((point (point)))
-      (kirigami-close-folds)
-      (goto-char point)
-      (kirigami-open-fold))))
+  (kirigami--optimize
+   (let ((point (point)))
+     (kirigami-close-folds)
+     (goto-char point)
+     (kirigami-open-fold))))
 
 ;;;###autoload
 (defun kirigami-open-fold ()
   "Open fold at point.
 See also `kirigami-close-fold'."
   (interactive)
-  (kirigami--with-increased-gc
-    (kirigami-fold-action kirigami-fold-list :open)
+  (kirigami--optimize
+   (kirigami-fold-action kirigami-fold-list :open)
 
-    ;; TODO Restore visual position in certain cases
-    ;; (if kirigami-preserve-visual-position
-    ;;     (kirigami--save-window-start
-    ;;       (kirigami--save-window-scroll
-    ;;         (kirigami-fold-action kirigami-fold-list :open)))
-    ;;   (kirigami-fold-action kirigami-fold-list :open))
-    ))
+   ;; TODO Restore visual position in certain cases
+   ;; (if kirigami-preserve-visual-position
+   ;;     (kirigami--save-window-start
+   ;;       (kirigami--save-window-scroll
+   ;;         (kirigami-fold-action kirigami-fold-list :open)))
+   ;;   (kirigami-fold-action kirigami-fold-list :open))
+   ))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
   "Open fold at point recursively.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (kirigami--with-increased-gc
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :open-rec)))
-      (kirigami-fold-action kirigami-fold-list :open-rec))))
+  (kirigami--optimize
+   (if kirigami-preserve-visual-position
+       (kirigami--save-window-start
+         (kirigami--save-window-scroll
+           (kirigami-fold-action kirigami-fold-list :open-rec)))
+     (kirigami-fold-action kirigami-fold-list :open-rec))))
 
 ;;;###autoload
 (defun kirigami-open-folds ()
   "Open all folds.
 See also `kirigami-close-folds'."
   (interactive)
-  (kirigami--with-increased-gc
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :open-all)))
-      (kirigami-fold-action kirigami-fold-list :open-all))))
+  (kirigami--optimize
+   (if kirigami-preserve-visual-position
+       (kirigami--save-window-start
+         (kirigami--save-window-scroll
+           (kirigami-fold-action kirigami-fold-list :open-all)))
+     (kirigami-fold-action kirigami-fold-list :open-all))))
 
 ;;;###autoload
 (defun kirigami-close-fold ()
   "Close fold at point.
 See also `kirigami-open-fold'."
   (interactive)
-  (kirigami--with-increased-gc
-    (kirigami-fold-action kirigami-fold-list :close)
+  (kirigami--optimize
+   (kirigami-fold-action kirigami-fold-list :close)
 
-    ;; TODO Only restore visual position when the heading < window-start
-    ;; (if kirigami-preserve-visual-position
-    ;;     (kirigami--save-window-start
-    ;;       (kirigami--save-window-scroll
-    ;;         (kirigami-fold-action kirigami-fold-list :close)))
-    ;;   (kirigami-fold-action kirigami-fold-list :close))
-    ))
+   ;; TODO Only restore visual position when the heading < window-start
+   ;; (if kirigami-preserve-visual-position
+   ;;     (kirigami--save-window-start
+   ;;       (kirigami--save-window-scroll
+   ;;         (kirigami-fold-action kirigami-fold-list :close)))
+   ;;   (kirigami-fold-action kirigami-fold-list :close))
+   ))
 
 ;;;###autoload
 (defun kirigami-toggle-fold ()
   "Open or close a fold under point.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (kirigami--with-increased-gc
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :toggle)))
-      (kirigami-fold-action kirigami-fold-list :toggle))))
+  (kirigami--optimize
+   (if kirigami-preserve-visual-position
+       (kirigami--save-window-start
+         (kirigami--save-window-scroll
+           (kirigami-fold-action kirigami-fold-list :toggle)))
+     (kirigami-fold-action kirigami-fold-list :toggle))))
 
 ;;;###autoload
 (defun kirigami-close-folds ()
   "Close all folds."
   (interactive)
-  (kirigami--with-increased-gc
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :close-all)))
-      (kirigami-fold-action kirigami-fold-list :close-all))))
+  (kirigami--optimize
+   (if kirigami-preserve-visual-position
+       (kirigami--save-window-start
+         (kirigami--save-window-scroll
+           (kirigami-fold-action kirigami-fold-list :close-all)))
+     (kirigami-fold-action kirigami-fold-list :close-all))))
 
 (provide 'kirigami)
 
