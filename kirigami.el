@@ -88,7 +88,7 @@ specific reason to disable these enhancements."
   :group 'kirigami)
 
 (defcustom kirigami-preserve-visual-position nil
-  "When non-nil, maintain the cursor's vertical position during folding.
+  "When non-nil, maintain the vertical position of the cursor during folding.
 This prevents the window from jumping or re-centering when headings are expanded
 or collapsed, keeping the relative distance between the cursor and the top of
 the window constant."
@@ -345,11 +345,15 @@ overhead during large-scale changes.")
 
 (defun kirigami--mode-p (modes)
   "Check if any symbol in MODES matches the current buffer's modes."
-  (unless (eq modes '())
-    (let ((mode (car modes)))
-      (or (eq major-mode mode)
-          (and (boundp mode) (symbol-value mode))
-          (kirigami--mode-p (cdr modes))))))
+  (let ((tail modes)
+        (found nil))
+    (while (and tail (not found))
+      (let ((mode (car tail)))
+        (if (or (eq major-mode mode)
+                (and (boundp mode) (symbol-value mode)))
+            (setq found t)
+          (setq tail (cdr tail)))))
+    found))
 
 (defun kirigami-fold--action-get-func (list action &optional ignore-errors)
   "Return the function to execute ACTION in a major/minor mode in LIST."
