@@ -121,6 +121,7 @@ These modes are included with Emacs by default. They only need to be enabled in 
   (add-hook 'go-mode-hook #'hs-minor-mode)
   (add-hook 'ruby-mode-hook #'hs-minor-mode)
   (add-hook 'php-mode-hook #'hs-minor-mode)
+  (add-hook 'perl-mode-hook #'hs-minor-mode)
 
   ;; Web and Frontend
   (add-hook 'js-mode-hook #'hs-minor-mode)
