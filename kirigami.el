@@ -328,6 +328,15 @@ The return values of functions in this hook are ignored.")
                             column
                           line-size))))))
 
+(defun kirigami--ensure-cursor-visible-on-line ()
+  "Ensure cursor is placed at the end of the current visible line if hidden."
+  (let ((eol-vis (save-excursion
+                   (vertical-motion 0)
+                   (end-of-visual-line)
+                   (point))))
+    (when (> (point) eol-vis)
+      (goto-char eol-vis))))
+
 (defun kirigami--mode-p (modes)
   "Check if any symbol in MODES matches the current buffer's modes."
   (unless (eq modes '())
@@ -952,7 +961,8 @@ cursor."
     (let ((point (point)))
       (kirigami-close-folds)
       (goto-char point)
-      (kirigami-open-fold))))
+      (kirigami-open-fold)
+      (kirigami--ensure-cursor-visible-on-line))))
 
 ;;;###autoload
 (defun kirigami-open-fold ()
@@ -997,6 +1007,7 @@ See also `kirigami-open-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (kirigami-fold-action kirigami-fold-list :close)
+    (kirigami--ensure-cursor-visible-on-line)
 
     ;; TODO Only restore visual position when the heading < window-start
     ;; (if kirigami-preserve-visual-position
@@ -1016,7 +1027,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
         (kirigami--save-window-scroll
           (kirigami--save-window-start
             (kirigami-fold-action kirigami-fold-list :toggle)))
-      (kirigami-fold-action kirigami-fold-list :toggle))))
+      (kirigami-fold-action kirigami-fold-list :toggle))
+    (kirigami--ensure-cursor-visible-on-line)))
 
 ;;;###autoload
 (defun kirigami-close-folds ()
@@ -1027,7 +1039,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
         (kirigami--save-window-scroll
           (kirigami--save-window-start
             (kirigami-fold-action kirigami-fold-list :close-all)))
-      (kirigami-fold-action kirigami-fold-list :close-all))))
+      (kirigami-fold-action kirigami-fold-list :close-all))
+    (kirigami--ensure-cursor-visible-on-line)))
 
 (provide 'kirigami)
 
