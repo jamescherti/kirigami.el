@@ -970,7 +970,7 @@ See also `kirigami-close-fold'."
   (kirigami--with-increased-gc
     (kirigami-fold-action kirigami-fold-list :open)
 
-    ;; TODO fix
+    ;; TODO Restore visual position in certain cases
     ;; (if kirigami-preserve-visual-position
     ;;     (kirigami--save-window-start
     ;;       (kirigami--save-window-scroll
