@@ -735,15 +735,8 @@ cursor, maintaining the relative vertical position of the cursor within the
 window.
 
 To also restore the mark, this macro can be combined with
-`save-mark-and-excursion'. For preservation of horizontal scroll only (hscroll),
-consider using the `kirigami--save-window-hscroll' macro.
-
-Example:
-  (kirigami--save-window-hscroll
-        (kirigami--save-window-start
-          (save-mark-and-excursion
-            ;;; Add code here
-            t))
+`save-mark-and-excursion'. For preservation of horizontal and vertical scroll,
+consider using the `kirigami--save-window-scroll' macro.
 
 This macro is appropriate when it is necessary to maintain the visual layout of
 the buffer, especially if BODY may scroll the window or otherwise move the
@@ -790,10 +783,12 @@ cursor."
   "Execute BODY while preserving the horizontal and vertical scroll."
   (declare (indent 0) (debug t))
   (let ((window (make-symbol "window"))
+        (window-buffer (make-symbol "window-buffer"))
         (hscroll (make-symbol "hscroll"))
         (vscroll (make-symbol "vscroll"))
         (should-restore (make-symbol "should-restore")))
     `(let* ((,window (selected-window))
+            (,window-buffer (window-buffer ,window))
             ;; Check conditions and capture scroll BEFORE body runs
             (,should-restore (and (window-live-p ,window)
                                   (eq (current-buffer)
@@ -806,7 +801,10 @@ cursor."
            ;; Execute body exactly ONCE
            (progn ,@body)
          ;; Restore only if conditions were originally met
-         (when (and ,should-restore (window-live-p ,window))
+         (when (and ,should-restore
+                    (window-live-p ,window)
+                    (buffer-live-p ,window-buffer)
+                    (eq ,window-buffer (window-buffer ,window)))
            (set-window-vscroll ,window ,vscroll t)
            (set-window-hscroll ,window ,hscroll))))))
 
@@ -971,8 +969,8 @@ See also `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-scroll
-          (kirigami--save-window-start
+        (kirigami--save-window-start
+          (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :open)))
       (kirigami-fold-action kirigami-fold-list :open))))
 
@@ -983,8 +981,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-scroll
-          (kirigami--save-window-start
+        (kirigami--save-window-start
+          (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :open-rec)))
       (kirigami-fold-action kirigami-fold-list :open-rec))))
 
@@ -995,8 +993,8 @@ See also `kirigami-close-folds'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-scroll
-          (kirigami--save-window-start
+        (kirigami--save-window-start
+          (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :open-all)))
       (kirigami-fold-action kirigami-fold-list :open-all))))
 
@@ -1011,8 +1009,8 @@ See also `kirigami-open-fold'."
 
     ;; TODO Only restore visual position when the heading < window-start
     ;; (if kirigami-preserve-visual-position
-    ;;     (kirigami--save-window-scroll
-    ;;       (kirigami--save-window-start
+    ;;     (kirigami--save-window-start
+    ;;       (kirigami--save-window-scroll
     ;;         (kirigami-fold-action kirigami-fold-list :close)))
     ;;   (kirigami-fold-action kirigami-fold-list :close))
     ))
@@ -1024,8 +1022,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-scroll
-          (kirigami--save-window-start
+        (kirigami--save-window-start
+          (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :toggle)))
       (kirigami-fold-action kirigami-fold-list :toggle))
     (kirigami--ensure-cursor-visible-on-line)))
@@ -1036,8 +1034,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-scroll
-          (kirigami--save-window-start
+        (kirigami--save-window-start
+          (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :close-all)))
       (kirigami-fold-action kirigami-fold-list :close-all))
     (kirigami--ensure-cursor-visible-on-line)))
