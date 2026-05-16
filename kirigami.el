@@ -310,16 +310,26 @@ The return values of functions in this hook are ignored.")
 
 ;;; Internal functions
 
+(defvar kirigami-inhibit-redisplay t
+  "Non-nil means inhibit UI redisplay during bulk fold operations.
+When expanding or collapsing multiple folds simultaneously, intermediate
+redisplay cycles consume unnecessary CPU overhead. Setting this variable
+to non-nil defers screen updates until the complete execution finishes.")
+
+(defvar kirigami-inhibit-message t
+  "Non-nil means suppress Echo Area messages during bulk fold operations.
+Some underlying folding functions call the `message' function to log structural
+updates. When this variable is non-nil, those calls are inhibited to prevent
+echo area redraws and unwanted writes to the '*Messages*' buffer, reducing I/O
+overhead during large-scale changes.")
+
 (defmacro kirigami--optimize (&rest body)
   "Evaluate BODY with temporarily inhibit redisplay and increased GC limits."
   (declare (indent 0) (debug t))
   `(let ((gc-cons-threshold (max gc-cons-threshold kirigami-gc-threshold))
          (gc-cons-percentage (max gc-cons-percentage kirigami-gc-percentage))
-         ;; When expanding or collapsing multiple folds, Emacs can waste CPU
-         ;; cycles attempting to redraw the screen for intermediate states. This
-         ;; forces Emacs to wait until the entire evaluation completes before
-         ;; updating the UI.
-         (inhibit-redisplay t))
+         (inhibit-redisplay kirigami-inhibit-redisplay)
+         (inhibit-message kirigami-inhibit-message))
      ,@body))
 
 (defun kirigami--call-preserve-column (fn)
