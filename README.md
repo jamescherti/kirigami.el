@@ -120,6 +120,7 @@ These modes are included with Emacs by default. They only need to be enabled in 
   (add-hook 'rust-mode-hook #'hs-minor-mode)
   (add-hook 'go-mode-hook #'hs-minor-mode)
   (add-hook 'ruby-mode-hook #'hs-minor-mode)
+  (add-hook 'php-mode-hook #'hs-minor-mode)
 
   ;; Web and Frontend
   (add-hook 'js-mode-hook #'hs-minor-mode)
@@ -204,6 +205,7 @@ These packages must be installed from a package repository such as MELPA prior t
   (add-hook 'rust-ts-mode-hook #'treesit-fold-mode)
   (add-hook 'go-ts-mode-hook #'treesit-fold-mode)
   (add-hook 'ruby-ts-mode-hook #'treesit-fold-mode)
+  (add-hook 'php-ts-mode-hook #'treesit-fold-mode)
 
   ;; Web and Frontend
   (add-hook 'js-ts-mode-hook #'treesit-fold-mode)

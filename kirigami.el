@@ -553,48 +553,47 @@ the entry is fully visible."
            (fboundp 'outline-back-to-heading)
            (fboundp 'outline-show-children)
            (fboundp 'outline-up-heading)
-           (fboundp 'outline-show-children)
            (fboundp 'outline-level)
            (fboundp 'outline-show-entry))
       (save-match-data
-        ;; Workaround for an outline-mode limitation: when jumping via imenu or
-        ;; search, sibling headings above the current one and at the same level
-        ;; often remain hidden. This ensures all sub-items at the current level
-        ;; are revealed, preventing the 'isolated item' effect.
-        (save-excursion
-          (catch 'done
-            (condition-case nil
-                (outline-back-to-heading t)
-              (error (throw 'done t)))
-
-            (let ((current-level (funcall outline-level)))
-              ;; Only attempt to climb if we are deeper than level 1
-              (while (and (numberp current-level) (> current-level 1))
-                (let ((prev-point (point)))
-                  (condition-case nil
-                      ;; invisible-ok is t
-                      (outline-up-heading 1 t)
-                    (error (throw 'done t)))
-
-                  ;; If point didn't move or level didn't decrease, we've hit
-                  ;; a wall or a sibling jump
-                  (let ((new-level (funcall outline-level)))
-                    (when (or (= prev-point (point))
-                              (>= new-level current-level))
-                      (throw 'done t))
-                    (setq current-level new-level))
-
-                  (condition-case nil
-                      (progn
-                        (outline-show-children)
-                        (outline-show-entry))
-                    (error (throw 'done t))))))))
-
         (let ((on-invisible-heading (when (outline-on-heading-p t)
                                       (outline-invisible-p)))
               (on-visible-heading (save-excursion
                                     (goto-char (line-beginning-position))
                                     (outline-on-heading-p))))
+          ;; Workaround for an outline-mode limitation: when jumping via imenu or
+          ;; search, sibling headings above the current one and at the same level
+          ;; often remain hidden. This ensures all sub-items at the current level
+          ;; are revealed, preventing the 'isolated item' effect.
+          (save-excursion
+            (catch 'done
+              (condition-case nil
+                  (outline-back-to-heading t)
+                (error (throw 'done t)))
+
+              (let ((current-level (funcall outline-level)))
+                ;; Only attempt to climb if we are deeper than level 1
+                (while (and (numberp current-level) (> current-level 1))
+                  (let ((prev-point (point)))
+                    (condition-case nil
+                        ;; invisible-ok is t
+                        (outline-up-heading 1 t)
+                      (error (throw 'done t)))
+
+                    ;; If point didn't move or level didn't decrease, we've hit
+                    ;; a wall or a sibling jump
+                    (let ((new-level (funcall outline-level)))
+                      (when (or (= prev-point (point))
+                                (>= new-level current-level))
+                        (throw 'done t))
+                      (setq current-level new-level))
+
+                    (condition-case nil
+                        (progn
+                          (outline-show-children)
+                          (outline-show-entry))
+                      (error (throw 'done t))))))))
+
           (kirigami--outline-show-entry-and-parents)
 
           ;; If the header was previously hidden, hide the subtree to collapse
