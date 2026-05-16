@@ -777,22 +777,28 @@ cursor."
                                  ;; No force
                                  t))))))))
 
-(defmacro kirigami--save-window-hscroll (&rest body)
-  "Execute BODY while preserving the horizontal scroll of the selected window."
+(defmacro kirigami--save-window-scroll (&rest body)
+  "Execute BODY while preserving the horizontal and vertical scroll."
   (declare (indent 0) (debug t))
   (let ((window (make-symbol "window"))
         (hscroll (make-symbol "hscroll"))
+        (vscroll (make-symbol "vscroll"))
         (should-restore (make-symbol "should-restore")))
     `(let* ((,window (selected-window))
             ;; Check conditions and capture scroll BEFORE body runs
             (,should-restore (and (window-live-p ,window)
-                                  (eq (current-buffer) (window-buffer ,window))))
+                                  (eq (current-buffer)
+                                      (window-buffer ,window))))
             (,hscroll (when ,should-restore
-                        (window-hscroll ,window))))
+                        (window-hscroll ,window)))
+            (,vscroll (when ,should-restore
+                        (window-vscroll ,window t))))
        (unwind-protect
-           (progn ,@body) ; Execute body exactly ONCE
+           ;; Execute body exactly ONCE
+           (progn ,@body)
          ;; Restore only if conditions were originally met
          (when (and ,should-restore (window-live-p ,window))
+           (set-window-vscroll ,window ,vscroll t)
            (set-window-hscroll ,window ,hscroll))))))
 
 (defun kirigami--outline-close ()
@@ -954,7 +960,11 @@ cursor."
 See also `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
-    (kirigami-fold-action kirigami-fold-list :open)))
+    (if kirigami-preserve-visual-position
+        (kirigami--save-window-scroll
+          (kirigami--save-window-start
+            (kirigami-fold-action kirigami-fold-list :open)))
+      (kirigami-fold-action kirigami-fold-list :open))))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
@@ -963,7 +973,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-hscroll
+        (kirigami--save-window-scroll
           (kirigami--save-window-start
             (kirigami-fold-action kirigami-fold-list :open-rec)))
       (kirigami-fold-action kirigami-fold-list :open-rec))))
@@ -975,7 +985,7 @@ See also `kirigami-close-folds'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-hscroll
+        (kirigami--save-window-scroll
           (kirigami--save-window-start
             (kirigami-fold-action kirigami-fold-list :open-all)))
       (kirigami-fold-action kirigami-fold-list :open-all))))
@@ -990,7 +1000,7 @@ See also `kirigami-open-fold'."
 
     ;; TODO Only restore visual position when the heading < window-start
     ;; (if kirigami-preserve-visual-position
-    ;;     (kirigami--save-window-hscroll
+    ;;     (kirigami--save-window-scroll
     ;;       (kirigami--save-window-start
     ;;         (kirigami-fold-action kirigami-fold-list :close)))
     ;;   (kirigami-fold-action kirigami-fold-list :close))
@@ -1003,7 +1013,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-hscroll
+        (kirigami--save-window-scroll
           (kirigami--save-window-start
             (kirigami-fold-action kirigami-fold-list :toggle)))
       (kirigami-fold-action kirigami-fold-list :toggle))))
@@ -1014,7 +1024,7 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--with-increased-gc
     (if kirigami-preserve-visual-position
-        (kirigami--save-window-hscroll
+        (kirigami--save-window-scroll
           (kirigami--save-window-start
             (kirigami-fold-action kirigami-fold-list :close-all)))
       (kirigami-fold-action kirigami-fold-list :close-all))))
