@@ -167,12 +167,36 @@ the window constant."
      :open-rec    ts-fold-open-recursively
      :close       ts-fold-close)
     ((treesit-fold-mode)
-     :open-all   treesit-fold-open-all
-     :close-all  treesit-fold-close-all
-     :toggle     treesit-fold-toggle
-     :open       treesit-fold-open
-     :open-rec   treesit-fold-open-recursively
-     :close      treesit-fold-close)
+     :open-all   ,(lambda ()
+                    (when (fboundp 'treesit-fold-open-all)
+                      (treesit-fold-open-all)))
+     :close-all  ,(lambda ()
+                    (when (fboundp 'treesit-fold-close-all)
+                      (treesit-fold-close-all)))
+     :toggle     ,(lambda ()
+                    (when (fboundp 'treesit-fold-toggle)
+                      (save-excursion
+                        (when (and (eolp) (not (bolp)))
+                          (backward-char 1))
+                        (treesit-fold-toggle))))
+     :open       ,(lambda ()
+                    (when (fboundp 'treesit-fold-open)
+                      (save-excursion
+                        (when (and (eolp) (not (bolp)))
+                          (backward-char 1))
+                        (treesit-fold-open))))
+     :open-rec   ,(lambda ()
+                    (when (fboundp 'treesit-fold-open-recursively)
+                      (save-excursion
+                        (when (and (eolp) (not (bolp)))
+                          (backward-char 1))
+                        (treesit-fold-open-recursively))))
+     :close      ,(lambda ()
+                    (when (fboundp 'treesit-fold-close)
+                      (save-excursion
+                        (when (and (eolp) (not (bolp)))
+                          (backward-char 1))
+                        (treesit-fold-close)))))
     ((folding-mode)
      :open-all   folding-open-buffer
      :close-all  ,(lambda()
