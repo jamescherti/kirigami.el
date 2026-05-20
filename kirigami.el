@@ -176,26 +176,22 @@ the window constant."
      :toggle     ,(lambda ()
                     (when (fboundp 'treesit-fold-toggle)
                       (save-excursion
-                        (when (and (eolp) (not (bolp)))
-                          (backward-char 1))
+                        (kirigami--normalize-point)
                         (treesit-fold-toggle))))
      :open       ,(lambda ()
                     (when (fboundp 'treesit-fold-open)
                       (save-excursion
-                        (when (and (eolp) (not (bolp)))
-                          (backward-char 1))
+                        (kirigami--normalize-point)
                         (treesit-fold-open))))
      :open-rec   ,(lambda ()
                     (when (fboundp 'treesit-fold-open-recursively)
                       (save-excursion
-                        (when (and (eolp) (not (bolp)))
-                          (backward-char 1))
+                        (kirigami--normalize-point)
                         (treesit-fold-open-recursively))))
      :close      ,(lambda ()
                     (when (fboundp 'treesit-fold-close)
                       (save-excursion
-                        (when (and (eolp) (not (bolp)))
-                          (backward-char 1))
+                        (kirigami--normalize-point)
                         (treesit-fold-close)))))
     ((folding-mode)
      :open-all   folding-open-buffer
@@ -355,6 +351,23 @@ overhead during large-scale changes.")
          (inhibit-redisplay kirigami-inhibit-redisplay)
          (inhibit-message kirigami-inhibit-message))
      ,@body))
+
+(defun kirigami--normalize-point ()
+  "Adjust point to a valid position on the current line.
+Move point back by one character if it is at the end of a non-empty line.
+Move point forward to the first non-whitespace character if it is located
+within the leading whitespace."
+  (when (and (eolp) (not (bolp)))
+    (backward-char 1))
+
+  ;; Adjust point only if it resides inside the leading whitespace.
+  ;; In `treesit-fold-mode', for example, this avoids overriding specific
+  ;; sub-node targeting later on the line.
+  ;; For example, if point is on the '[' in 'val = [1, 2, 3]', an unconditional
+  ;; jump back to indentation shifts targeting to 'val' and folds the entire
+  ;; assignment instead of the array.
+  (when (< (current-column) (current-indentation))
+    (back-to-indentation)))
 
 (defun kirigami--call-preserve-column (fn)
   "Call FN and restore point to the original column when possible."
