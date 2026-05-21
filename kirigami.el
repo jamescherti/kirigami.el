@@ -328,6 +328,49 @@ The return values of functions in this hook are ignored.")
 (defvar kirigami-gc-percentage 0.3
   "GC percentage for temporary increase.")
 
+(defcustom kirigami-show-menu-bar t
+  "Non-nil means display the Kirigami menu in the menu bar."
+  :type 'boolean
+  :group 'kirigami)
+
+(defcustom kirigami-menu-bar-label "Kirigami"
+  "The title displayed in the menu bar for Kirigami operations."
+  :type 'string
+  :group 'kirigami
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (boundp 'kirigami-mode-map)
+           (define-key kirigami-mode-map [menu-bar kirigami]
+                       `(menu-item kirigami-menu-bar-label kirigami-menu-map
+                                   :visible kirigami-show-menu-bar)))))
+
+(defvar kirigami-menu-map
+  (let ((map (make-sparse-keymap "Kirigami")))
+    (define-key map [kirigami-close-folds]
+                '(menu-item "Close All Folds" kirigami-close-folds
+                            :help "Close all folds in the buffer"))
+    (define-key map [kirigami-open-folds]
+                '(menu-item "Open All Folds" kirigami-open-folds
+                            :help "Open all folds in the buffer"))
+    (define-key map [separator-1]
+                '(menu-item "--"))
+    (define-key map [kirigami-open-fold-rec]
+                '(menu-item "Open Fold Recursively" kirigami-open-fold-rec
+                            :help "Open fold at point recursively"))
+    (define-key map [separator-2]
+                '(menu-item "--"))
+    (define-key map [kirigami-toggle-fold]
+                '(menu-item "Toggle Fold" kirigami-toggle-fold
+                            :help "Toggle fold at point"))
+    (define-key map [kirigami-close-fold]
+                '(menu-item "Close Fold" kirigami-close-fold
+                            :help "Close fold at point"))
+    (define-key map [kirigami-open-fold]
+                '(menu-item "Open Fold" kirigami-open-fold
+                            :help "Open fold at point"))
+    map)
+  "Menu keymap for Kirigami.")
+
 ;;; Internal functions
 
 (defvar kirigami-inhibit-redisplay t
@@ -1025,15 +1068,54 @@ cursor."
        ((fboundp 'hide-sublevels)
         (hide-sublevels 1)))))))
 
+;;; Menus and Minor Mode
+
+(defun kirigami-context-menu (menu _click)
+  "Populate MENU with Kirigami folding commands at CLICK."
+  (define-key menu [kirigami-separator] '(menu-item "--"))
+  (define-key menu [kirigami-menu]
+              `(menu-item "Kirigami" ,kirigami-menu-map))
+  menu)
+
+(defvar kirigami-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [menu-bar kirigami]
+                `(menu-item kirigami-menu-bar-label kirigami-menu-map
+                            :visible kirigami-show-menu-bar))
+    map)
+  "Keymap for `kirigami-mode'.")
+
+;;;###autoload
+(define-minor-mode kirigami-mode
+  "Buffer-local minor mode to enable Kirigami menus and context menus."
+  :group 'kirigami
+  :lighter " Kirigami"
+  :global nil
+  (if kirigami-mode
+      (when (boundp 'context-menu-functions)
+        (add-hook 'context-menu-functions #'kirigami-context-menu nil t))
+    (when (boundp 'context-menu-functions)
+      (remove-hook 'context-menu-functions #'kirigami-context-menu t))))
+
+(defun kirigami-mode-turn-on ()
+  "Turn on `kirigami-mode' unconditionally."
+  (kirigami-mode 1))
+
+;;;###autoload
+(define-globalized-minor-mode kirigami-global-mode
+  kirigami-mode kirigami-mode-turn-on
+  :group 'kirigami)
+
 ;;; Functions: open/close folds
 
+;; TODO Rename to close other folds?
+;; TODO interactive?
 (defun kirigami-close-folds-except-current ()
   "Close all folds except the current one."
   (kirigami--optimize
-    (let ((point (point)))
-      (kirigami-close-folds)
-      (goto-char point)
-      (kirigami-open-fold))))
+    (save-excursion
+      (kirigami-close-folds))
+    (kirigami-open-fold)))
 
 ;;;###autoload
 (defun kirigami-open-fold ()

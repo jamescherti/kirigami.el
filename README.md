@@ -9,14 +9,15 @@ The **kirigami** Emacs package provides a unified method to fold and unfold text
 
 **Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `embark-collect-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `TeX-fold-mode` (AUCTeX), `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, and `hs-minor-mode` (hideshow).
 
-With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available commands include:
-
+With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available interactive commands include:
 - `kirigami-open-fold`: Open the fold at point.
 - `kirigami-open-fold-rec`: Open the fold at point recursively.
 - `kirigami-close-fold`: Close the fold at point.
 - `kirigami-open-folds`: Open all folds in the buffer.
 - `kirigami-close-folds`: Close all folds in the buffer.
 - `kirigami-toggle-fold`: Toggle the fold at point.
+
+It features both a buffer-local minor mode (`kirigami-mode`) and an editor-wide global minor mode (`kirigami-global-mode`) that expose all text-folding operations through keybindings, a menu bar entry, and context menus.
 
 In addition to unified interface, the kirigami package enhances folding behavior in `outline`, `markdown-mode`, and `org-mode` packages. It ensures that deep folds open reliably, allows folds to be closed even when the cursor is positioned inside the content, and ensures that sibling folds at the same level are visible when a sub-fold is expanded. When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
 
@@ -59,7 +60,9 @@ To install **kirigami** from MELPA:
 
 2. Add the following code to your Emacs init file to install **kirigami** from MELPA:
 ```elisp
-(use-package kirigami)
+(use-package kirigami
+  :config
+  (kirigami-global-mode 1))
 ```
 
 ## Usage
