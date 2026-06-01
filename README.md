@@ -62,7 +62,9 @@ To install **kirigami** from MELPA:
 ```elisp
 (use-package kirigami
   :custom
+  ;; Add Kirigami to the menu bar and context menu (`context-menu-mode').
   (kirigami-show-menu-bar t)
+  (kirigami-show-context-menu t)
   :config
   (kirigami-global-mode 1))
 ```

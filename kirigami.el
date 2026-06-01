@@ -333,16 +333,10 @@ The return values of functions in this hook are ignored.")
   :type 'boolean
   :group 'kirigami)
 
-(defcustom kirigami-menu-bar-label "Kirigami"
-  "The title displayed in the menu bar for Kirigami operations."
-  :type 'string
-  :group 'kirigami
-  :set (lambda (symbol value)
-         (set-default symbol value)
-         (when (boundp 'kirigami-mode-map)
-           (define-key kirigami-mode-map [menu-bar kirigami]
-                       `(menu-item kirigami-menu-bar-label kirigami-menu-map
-                                   :visible kirigami-show-menu-bar)))))
+(defcustom kirigami-show-context-menu t
+  "Non-nil means display the Kirigami menu in the context menu."
+  :type 'boolean
+  :group 'kirigami)
 
 (defvar kirigami-menu-map
   (let ((map (make-sparse-keymap "Kirigami")))
@@ -371,7 +365,21 @@ The return values of functions in this hook are ignored.")
     map)
   "Menu keymap for Kirigami.")
 
-(fset 'kirigami-menu-map kirigami-menu-map)
+(defvar kirigami-mode-map
+  (let ((map (make-sparse-keymap)))
+    map)
+  "Keymap for `kirigami-mode'.")
+
+(defcustom kirigami-menu-bar-label "Kirigami"
+  "The title displayed in the menu bar for Kirigami operations."
+  :type 'string
+  :group 'kirigami
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (boundp 'kirigami-mode-map)
+           (define-key kirigami-mode-map [menu-bar kirigami]
+                       `(menu-item ,value ,kirigami-menu-map
+                                   :visible kirigami-show-menu-bar)))))
 
 ;;; Internal functions
 
@@ -1078,18 +1086,11 @@ cursor."
 
 (defun kirigami-context-menu (menu _click)
   "Populate MENU with Kirigami folding commands at CLICK."
-  (define-key menu [kirigami-separator] '(menu-item "--"))
-  (define-key menu [kirigami-menu]
-              `(menu-item "Kirigami" ,kirigami-menu-map))
+  (when kirigami-show-context-menu
+    (define-key menu [kirigami-separator] '(menu-item "--"))
+    (define-key menu [kirigami-menu]
+                `(menu-item "Kirigami" ,kirigami-menu-map)))
   menu)
-
-(defvar kirigami-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map [menu-bar kirigami]
-                `(menu-item kirigami-menu-bar-label kirigami-menu-map
-                            :visible kirigami-show-menu-bar))
-    map)
-  "Keymap for `kirigami-mode'.")
 
 ;;;###autoload
 (define-minor-mode kirigami-mode
