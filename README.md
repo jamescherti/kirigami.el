@@ -61,6 +61,9 @@ To install **kirigami** from MELPA:
 2. Add the following code to your Emacs init file to install **kirigami** from MELPA:
 ```elisp
 (use-package kirigami
+  :custom
+  (kirigami-show-menu-bar t)
+  (kirigami-menu-bar-label "Kirigami")
   :config
   (kirigami-global-mode 1))
 ```

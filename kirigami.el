@@ -371,6 +371,8 @@ The return values of functions in this hook are ignored.")
     map)
   "Menu keymap for Kirigami.")
 
+(fset 'kirigami-menu-map kirigami-menu-map)
+
 ;;; Internal functions
 
 (defvar kirigami-inhibit-redisplay t
