@@ -63,7 +63,6 @@ To install **kirigami** from MELPA:
 (use-package kirigami
   :custom
   (kirigami-show-menu-bar t)
-  (kirigami-menu-bar-label "Kirigami")
   :config
   (kirigami-global-mode 1))
 ```
