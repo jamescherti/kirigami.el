@@ -328,12 +328,12 @@ The return values of functions in this hook are ignored.")
 (defvar kirigami-gc-percentage 0.3
   "GC percentage for temporary increase.")
 
-(defcustom kirigami-show-menu-bar t
+(defcustom kirigami-show-menu-bar nil
   "Non-nil means display the Kirigami menu in the menu bar."
   :type 'boolean
   :group 'kirigami)
 
-(defcustom kirigami-show-context-menu t
+(defcustom kirigami-show-context-menu nil
   "Non-nil means display the Kirigami menu in the context menu."
   :type 'boolean
   :group 'kirigami)
