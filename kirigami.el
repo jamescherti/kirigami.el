@@ -370,11 +370,6 @@ The return values of functions in this hook are ignored.")
     map)
   "Menu keymap for Kirigami.")
 
-(defvar kirigami-mode-map
-  (let ((map (make-sparse-keymap)))
-    map)
-  "Keymap for `kirigami-mode'.")
-
 (defcustom kirigami-menu-bar-label "Kirigami"
   "The title displayed in the menu bar for Kirigami operations."
   :type 'string
@@ -385,6 +380,14 @@ The return values of functions in this hook are ignored.")
            (define-key kirigami-mode-map [menu-bar kirigami]
                        `(menu-item ,value ,kirigami-menu-map
                                    :visible kirigami-show-menu-bar)))))
+
+(defvar kirigami-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [menu-bar kirigami]
+                `(menu-item ,kirigami-menu-bar-label ,kirigami-menu-map
+                            :visible kirigami-show-menu-bar))
+    map)
+  "Keymap for `kirigami-mode'.")
 
 ;;; Internal functions
 
