@@ -338,6 +338,11 @@ The return values of functions in this hook are ignored.")
   :type 'boolean
   :group 'kirigami)
 
+(defcustom kirigami-context-menu-label "Kirigami"
+  "The title displayed in the context menu for Kirigami operations."
+  :type 'string
+  :group 'kirigami)
+
 (defvar kirigami-menu-map
   (let ((map (make-sparse-keymap "Kirigami")))
     (define-key map [kirigami-close-folds]
@@ -1089,7 +1094,7 @@ cursor."
   (when kirigami-show-context-menu
     (define-key menu [kirigami-separator] '(menu-item "--"))
     (define-key menu [kirigami-menu]
-                `(menu-item "Kirigami" ,kirigami-menu-map)))
+                `(menu-item ,kirigami-context-menu-label ,kirigami-menu-map)))
   menu)
 
 ;;;###autoload
