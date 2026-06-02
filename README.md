@@ -30,7 +30,7 @@ Here are the features that **kirigami** offers:
 - **Automatic handler selection**: Kirigami automatically chooses the right folding method based on the mode being used.
 - **Extensible fold list**: Users can easily add or customize folding methods for different modes through the `kirigami-fold-list` alist.
 - Support for multiple folding backends, including:
-  - `outline-mode`, `outline-minor-mode` (built-in), and derivatives (e.g., `outli-mode`)
+  - `outline-mode`, `outline-minor-mode` (built-in), and external packages based on outline such as outli (`outli-mode`) or [outline-indent](https://github.com/jamescherti/outline-indent.el) (`outline-indent-minor-mode`), a package that enables code folding based on indentation.
   - `hs-minor-mode` (hideshow, built-in)
   - `outline-indent-minor-mode` ([outline-indent.el](https://github.com/jamescherti/outline-indent.el), a package that enables code folding based on indentation)
   - `org-mode` (built-in)
