@@ -7,7 +7,7 @@
 
 The **kirigami** Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
 
-**Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `embark-collect-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `TeX-fold-mode` (AUCTeX), `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, and `hs-minor-mode` (hideshow).
+**Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `outli-mode`, `embark-collect-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `TeX-fold-mode` (AUCTeX), `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, and `hs-minor-mode` (hideshow).
 
 With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available interactive commands include:
 - `kirigami-open-fold`: Open the fold at point.
@@ -30,7 +30,7 @@ Here are the features that **kirigami** offers:
 - **Automatic handler selection**: Kirigami automatically chooses the right folding method based on the mode being used.
 - **Extensible fold list**: Users can easily add or customize folding methods for different modes through the `kirigami-fold-list` alist.
 - Support for multiple folding backends, including:
-  - `outline-mode`, `outline-minor-mode` (built-in)
+  - `outline-mode`, `outline-minor-mode` (built-in), and derivatives (e.g., `outli-mode`)
   - `hs-minor-mode` (hideshow, built-in)
   - `outline-indent-minor-mode` ([outline-indent.el](https://github.com/jamescherti/outline-indent.el), a package that enables code folding based on indentation)
   - `org-mode` (built-in)
@@ -270,6 +270,8 @@ Code folding in Emacs operates on a similar principle. Blocks of text remain pre
 - [RideAndRoam3C](https://www.reddit.com/r/emacs/comments/1r1vvqr/comment/o52dnak/): "I enabled it today while doing some Org technical docs work. Solid."
 
 - [mickeyp](https://www.reddit.com/r/emacs/comments/1s2u530/comment/ocjn0m9/): "Nice job. So many different packages."
+
+- [Anthea_Likes](https://www.reddit.com/r/emacs/comments/1tup3tb/comment/opc70ay/): "I've been using Kirigami for a few months now, and it's absolutely gorgeous! Thank you for this quality work 🙏"
 
 ## Author and License
 
