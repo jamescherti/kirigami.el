@@ -657,6 +657,12 @@ and predictable visual expansion."
             prior-heading-point)
         (while (condition-case nil
                    (save-excursion
+                     ;; Workaround: `outline-back-to-heading' throws an
+                     ;; `outline-before-first-heading' error if the heading is
+                     ;; on the first line (e.g., in `markdown-ts-mode') and
+                     ;; point is deep within the hidden body of that folded
+                     ;; first heading.
+                     (vertical-motion 0)
                      ;; Navigate backward to the nearest visible heading
                      (outline-back-to-heading)
                      (setq heading-point (point))
