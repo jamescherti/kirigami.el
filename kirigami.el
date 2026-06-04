@@ -87,6 +87,15 @@ specific reason to disable these enhancements."
   :type 'boolean
   :group 'kirigami)
 
+(defcustom kirigami-enhance-outline-open nil
+  "EXPERIMENTAL. Non-nil to detect if a heading is invisible before opening it.
+When enabled, Kirigami checks if the cursor is on an invisible subheading during
+an expansion. If so, it closes that specific subheading after the reveal
+process. If nil, subheadings are left open regardless of their initial
+visibility state."
+  :type 'boolean
+  :group 'kirigami)
+
 (defcustom kirigami-preserve-visual-position nil
   "When non-nil, maintain the vertical position of the cursor during folding.
 This prevents the window from jumping or re-centering when headings are expanded
@@ -692,21 +701,22 @@ and predictable visual expansion."
                  (outline-before-first-heading
                   nil)))))))
 
-(defun kirigami--outline-on-heading-p ()
-  "Return t if point is on a visible outline heading."
+(defun kirigami--outline-on-heading-p (&optional invisible-ok)
+  "Return t if point is on an outline heading.
+If INVISIBLE-OK is non-nil, include invisible headings."
   (save-excursion
     (vertical-motion 0)
     (cond
      ((and (derived-mode-p 'org-mode)
            (fboundp 'org-at-heading-p))
-      (org-at-heading-p))
+      (org-at-heading-p (not invisible-ok)))
 
      ((and (derived-mode-p 'org-mode)
            (fboundp 'org-on-heading-p))
-      (org-on-heading-p))
+      (org-on-heading-p (not invisible-ok)))
 
      ((fboundp 'outline-on-heading-p)
-      (outline-on-heading-p)))))
+      (outline-on-heading-p invisible-ok)))))
 
 (defun kirigami--outline-show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
@@ -738,10 +748,13 @@ the entry is fully visible."
                ;; A heading fold is left open by kirigami only if the user
                ;; triggered the action while the cursor was on a visible
                ;; heading.
-               (on-heading (kirigami--outline-on-heading-p))
-               (on-invisible-subheading (and on-heading
-                                             (outline-on-heading-p t)
-                                             (kirigami--outline-invisible-p))))
+               (on-visible-heading (when kirigami-enhance-outline-open
+                                     (kirigami--outline-on-heading-p)))
+               (on-invisible-subheading (and
+                                         kirigami-enhance-outline-open
+                                         on-visible-heading
+                                         (kirigami--outline-on-heading-p t)
+                                         (kirigami--outline-invisible-p))))
           (unwind-protect
               (progn
                 (kirigami--outline-show-entry-and-parents)
@@ -750,7 +763,8 @@ the entry is fully visible."
                 ;; collapse it. Otherwise, leave the fold open. This allows the
                 ;; user to decide whether to expand the content under the
                 ;; cursor.
-                (when on-invisible-subheading
+                (when (and kirigami-enhance-outline-open
+                           on-invisible-subheading)
                   (kirigami--outline-legacy-hide-subtree)))
             ;; Workaround for an outline-mode issue: when jumping via imenu or
             ;; search, sibling headings above the current one and at the same
