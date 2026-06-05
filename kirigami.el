@@ -429,6 +429,18 @@ overhead during large-scale changes.")
          (inhibit-message kirigami-inhibit-message))
      ,@body))
 
+(defmacro kirigami--with-visual-position (&rest body)
+  "Execute BODY with optimized redisplay and visual layout preservation."
+  (declare (indent 0) (debug t))
+  `(kirigami--optimize
+     (cond
+      ((not kirigami-preserve-visual-position)
+       ,@body)
+      (t
+       (kirigami--save-window-start
+         (kirigami--save-window-scroll
+           ,@body))))))
+
 (defun kirigami--normalize-point ()
   "Adjust point to a valid position on the current line.
 Move point back by one character if it is at the end of a non-empty line.
@@ -1164,7 +1176,6 @@ cursor."
 ;; TODO interactive?
 (defun kirigami-close-folds-except-current ()
   "Close all folds except the current one."
-  ;; (interactive)
   (kirigami--optimize
     (save-excursion
       (kirigami-close-folds))
@@ -1176,53 +1187,31 @@ cursor."
   "Open fold at point.
 See also `kirigami-close-fold'."
   (interactive)
-  (kirigami--optimize
-    (kirigami-fold-action kirigami-fold-list :open))
-
-  ;; TODO Fix window-start moving to the next line
-  ;; (kirigami--optimize
-  ;;   (if kirigami-preserve-visual-position
-  ;;       (kirigami--save-window-start
-  ;;         (kirigami--save-window-scroll
-  ;;           (kirigami-fold-action kirigami-fold-list :open)))
-  ;;     (kirigami-fold-action kirigami-fold-list :open)))
-  )
+  ;; TODO: Fix kirigami--with-visual-position and use it here
+  (kirigami-fold-action kirigami-fold-list :open))
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
   "Open fold at point recursively.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (kirigami--optimize
-    (kirigami-fold-action kirigami-fold-list :open-rec))
-
-  ;; TODO Fix window-start moving to the next line
-  ;; (kirigami--optimize
-  ;;   (if kirigami-preserve-visual-position
-  ;;       (kirigami--save-window-start
-  ;;         (kirigami--save-window-scroll
-  ;;           (kirigami-fold-action kirigami-fold-list :open-rec)))
-  ;;     (kirigami-fold-action kirigami-fold-list :open-rec)))
-  )
+  ;; TODO: Fix kirigami--with-visual-position and use it here
+  (kirigami-fold-action kirigami-fold-list :open-rec))
 
 ;;;###autoload
 (defun kirigami-open-folds ()
   "Open all folds.
 See also `kirigami-close-folds'."
   (interactive)
-  (kirigami--optimize
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :open-all)))
-      (kirigami-fold-action kirigami-fold-list :open-all))))
+  (kirigami--with-visual-position
+    (kirigami-fold-action kirigami-fold-list :open-all)))
 
 ;;;###autoload
 (defun kirigami-close-fold ()
   "Close fold at point.
 See also `kirigami-open-fold'."
   (interactive)
-  (kirigami--optimize
+  (kirigami--with-visual-position
     (kirigami-fold-action kirigami-fold-list :close))
   (kirigami--reset-hscroll-if-blank))
 
@@ -1231,25 +1220,19 @@ See also `kirigami-open-fold'."
   "Open or close a fold under point.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
-  (kirigami--optimize
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :toggle)))
-      (kirigami-fold-action kirigami-fold-list :toggle)))
+  (kirigami--with-visual-position
+    (kirigami-fold-action kirigami-fold-list :toggle))
   (kirigami--reset-hscroll-if-blank))
 
 ;;;###autoload
 (defun kirigami-close-folds ()
   "Close all folds."
   (interactive)
-  (kirigami--optimize
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :close-all)))
-      (kirigami-fold-action kirigami-fold-list :close-all)))
+  (kirigami--with-visual-position
+    (kirigami-fold-action kirigami-fold-list :close-all))
   (set-window-hscroll nil 0))
+
+;;; Provide
 
 (provide 'kirigami)
 
