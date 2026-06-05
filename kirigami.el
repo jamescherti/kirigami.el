@@ -1177,15 +1177,16 @@ cursor."
 See also `kirigami-close-fold'."
   (interactive)
   (kirigami--optimize
-    (kirigami-fold-action kirigami-fold-list :open)
+    (kirigami-fold-action kirigami-fold-list :open))
 
-    ;; TODO Restore visual position in certain cases
-    ;; (if kirigami-preserve-visual-position
-    ;;     (kirigami--save-window-start
-    ;;       (kirigami--save-window-scroll
-    ;;         (kirigami-fold-action kirigami-fold-list :open)))
-    ;;   (kirigami-fold-action kirigami-fold-list :open))
-    ))
+  ;; TODO Fix window-start moving to the next line
+  ;; (kirigami--optimize
+  ;;   (if kirigami-preserve-visual-position
+  ;;       (kirigami--save-window-start
+  ;;         (kirigami--save-window-scroll
+  ;;           (kirigami-fold-action kirigami-fold-list :open)))
+  ;;     (kirigami-fold-action kirigami-fold-list :open)))
+  )
 
 ;;;###autoload
 (defun kirigami-open-fold-rec ()
@@ -1193,12 +1194,16 @@ See also `kirigami-close-fold'."
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--optimize
-    (kirigami-fold-action kirigami-fold-list :open-rec)
-    (if kirigami-preserve-visual-position
-        (kirigami--save-window-start
-          (kirigami--save-window-scroll
-            (kirigami-fold-action kirigami-fold-list :open-rec)))
-      (kirigami-fold-action kirigami-fold-list :open-rec))))
+    (kirigami-fold-action kirigami-fold-list :open-rec))
+
+  ;; TODO Fix window-start moving to the next line
+  ;; (kirigami--optimize
+  ;;   (if kirigami-preserve-visual-position
+  ;;       (kirigami--save-window-start
+  ;;         (kirigami--save-window-scroll
+  ;;           (kirigami-fold-action kirigami-fold-list :open-rec)))
+  ;;     (kirigami-fold-action kirigami-fold-list :open-rec)))
+  )
 
 ;;;###autoload
 (defun kirigami-open-folds ()
