@@ -931,6 +931,13 @@ cursor."
                                  ;; No force
                                  t))))))))
 
+(defun kirigami--reset-hscroll-if-blank ()
+  "Reset horizontal scroll to 0 if the current line is off-screen."
+  (when (> (window-hscroll) 0)
+    (let ((line-length (- (line-end-position) (line-beginning-position))))
+      (when (< line-length (window-hscroll))
+        (set-window-hscroll nil 0)))))
+
 (defmacro kirigami--save-window-scroll (&rest body)
   "Execute BODY while preserving the horizontal and vertical scroll."
   (declare (indent 0) (debug t))
@@ -958,7 +965,11 @@ cursor."
                     (buffer-live-p ,window-buffer)
                     (eq ,window-buffer (window-buffer ,window)))
            (set-window-vscroll ,window ,vscroll t)
-           (set-window-hscroll ,window ,hscroll))))))
+           ;; Prevent restoring horizontal scroll if it results in a blank view
+           (let ((line-length (- (line-end-position) (line-beginning-position))))
+             (if (>= line-length ,hscroll)
+                 (set-window-hscroll ,window ,hscroll)
+               (set-window-hscroll ,window 0))))))))
 
 (defun kirigami--outline-close ()
   "Close the `outline' fold at point."
@@ -1149,16 +1160,16 @@ cursor."
   kirigami-mode kirigami-mode-turn-on
   :group 'kirigami)
 
-;;; Functions: open/close folds
-
 ;; TODO Rename to close other folds?
 ;; TODO interactive?
 (defun kirigami-close-folds-except-current ()
   "Close all folds except the current one."
+  ;; (interactive)
   (kirigami--optimize
     (save-excursion
       (kirigami-close-folds))
-    (kirigami-open-fold)))
+    (kirigami-open-fold))
+  (kirigami--reset-hscroll-if-blank))
 
 ;;;###autoload
 (defun kirigami-open-fold ()
@@ -1182,6 +1193,7 @@ See also `kirigami-close-fold'."
 See also `kirigami-open-fold' and `kirigami-close-fold'."
   (interactive)
   (kirigami--optimize
+    (kirigami-fold-action kirigami-fold-list :open-rec)
     (if kirigami-preserve-visual-position
         (kirigami--save-window-start
           (kirigami--save-window-scroll
@@ -1206,7 +1218,8 @@ See also `kirigami-close-folds'."
 See also `kirigami-open-fold'."
   (interactive)
   (kirigami--optimize
-    (kirigami-fold-action kirigami-fold-list :close)))
+    (kirigami-fold-action kirigami-fold-list :close))
+  (kirigami--reset-hscroll-if-blank))
 
 ;;;###autoload
 (defun kirigami-toggle-fold ()
@@ -1218,7 +1231,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
         (kirigami--save-window-start
           (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :toggle)))
-      (kirigami-fold-action kirigami-fold-list :toggle))))
+      (kirigami-fold-action kirigami-fold-list :toggle)))
+  (kirigami--reset-hscroll-if-blank))
 
 ;;;###autoload
 (defun kirigami-close-folds ()
@@ -1229,7 +1243,8 @@ See also `kirigami-open-fold' and `kirigami-close-fold'."
         (kirigami--save-window-start
           (kirigami--save-window-scroll
             (kirigami-fold-action kirigami-fold-list :close-all)))
-      (kirigami-fold-action kirigami-fold-list :close-all))))
+      (kirigami-fold-action kirigami-fold-list :close-all)))
+  (set-window-hscroll nil 0))
 
 (provide 'kirigami)
 
