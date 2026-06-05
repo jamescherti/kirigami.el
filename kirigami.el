@@ -87,14 +87,21 @@ specific reason to disable these enhancements."
   :type 'boolean
   :group 'kirigami)
 
-(defcustom kirigami-enhance-outline-open nil
+(defvar kirigami-enhance-outline-open nil
   "EXPERIMENTAL. Non-nil to detect if a heading is invisible before opening it.
 When enabled, Kirigami checks if the cursor is on an invisible subheading during
 an expansion. If so, it closes that specific subheading after the reveal
 process. If nil, subheadings are left open regardless of their initial
-visibility state."
-  :type 'boolean
-  :group 'kirigami)
+visibility state.")
+
+(defvar kirigami-enhance-outline-close-all nil
+  "EXPERIMENTAL. Non-nil to enable enhanced behavior when closing all folds.
+When this variable and `kirigami-enhance-outline' are both non-nil,
+Kirigami applies a targeted method to collapse all headings. This fixes layout
+issues where buffers begin with deeply nested headings (such as
+`###' in `markdown-mode' without a preceding `#' or `##'), overriding the
+default `outline-hide-sublevels' logic to correctly handle level 0.
+This can be slow in some cases.")
 
 (defcustom kirigami-preserve-visual-position nil
   "When non-nil, maintain the vertical position of the cursor during folding.
@@ -1047,12 +1054,62 @@ cursor."
         (show-all)
       (kirigami--outline-ensure-window-start-heading-visible)))))
 
+(defun kirigami--enhanced-outline-close-all ()
+  "Close all `outline' folds and ensure the first heading remains visible."
+  (cond
+   ((and (bound-and-true-p outline-indent-minor-mode)
+         (fboundp 'outline-indent-close-folds))
+    (call-interactively 'outline-indent-close-folds))
+
+   ((or (fboundp 'hide-sublevels)
+        (fboundp 'outline-hide-sublevels))
+    (if kirigami-enhance-outline
+        (when (and (fboundp 'outline-on-heading-p)
+                   (fboundp 'outline-next-heading)
+                   (boundp 'outline-level))
+          ;; When `kirigami-enhance-outline' is non-nil
+          (unwind-protect
+              ;; TODO send a patch to Emacs
+              ;; In modes like markdown-mode, it is common for a document to
+              ;; start with a deeply nested heading (e.g., ###) without any
+              ;; parent # or ## headings present. The standard
+              ;; outline-hide-sublevels command often fails to collapse the
+              ;; buffer correctly in these cases if it defaults to a level that
+              ;; does not exist or treats level 0 incorrectly.
+              (save-excursion
+                (goto-char (point-min))
+
+                ;; Handle preamble (if the file doesn't start with a heading)
+                (unless (outline-on-heading-p)
+                  (outline-next-heading))
+
+                (let* ((first-level (if (outline-on-heading-p)
+                                        (funcall outline-level)
+                                      1))
+                       (target-level (if (numberp first-level) first-level 1)))
+                  (cond
+                   ((fboundp 'outline-hide-sublevels)
+                    (outline-hide-sublevels target-level))
+                   ((fboundp 'hide-sublevels)
+                    (hide-sublevels target-level)))))
+            (kirigami--outline-ensure-window-start-heading-visible)))
+      ;; When `kirigami-enhance-outline' is nil
+      (cond
+       ((fboundp 'outline-hide-sublevels)
+        (outline-hide-sublevels 1))
+       ((fboundp 'hide-sublevels)
+        (hide-sublevels 1)))))))
+
 (defun kirigami--outline-close-all ()
   "Close all `outline' folds and ensure the first heading remains visible."
   (cond
    ((and (bound-and-true-p outline-indent-minor-mode)
          (fboundp 'outline-indent-close-folds))
     (call-interactively 'outline-indent-close-folds))
+
+   ((and kirigami-enhance-outline
+         kirigami-enhance-outline-close-all)
+    (kirigami--enhanced-outline-close-all))
 
    ((or (fboundp 'hide-sublevels)
         (fboundp 'outline-hide-sublevels))
@@ -1062,53 +1119,6 @@ cursor."
       (outline-hide-sublevels 1))
      ((fboundp 'hide-sublevels)
       (hide-sublevels 1))))))
-
-;; TODO add option for this
-;; (defun kirigami--outline-close-all-smart ()
-;;   "Close all `outline' folds and ensure the first heading remains visible."
-;;   (cond
-;;    ((and (bound-and-true-p outline-indent-minor-mode)
-;;          (fboundp 'outline-indent-close-folds))
-;;     (call-interactively 'outline-indent-close-folds))
-;;
-;;    ((or (fboundp 'hide-sublevels)
-;;         (fboundp 'outline-hide-sublevels))
-;;     (if kirigami-enhance-outline
-;;         (when (and (fboundp 'outline-on-heading-p)
-;;                    (fboundp 'outline-next-heading)
-;;                    (boundp 'outline-level))
-;;           ;; When `kirigami-enhance-outline' is non-nil
-;;           (unwind-protect
-;;               ;; TODO send a patch to Emacs
-;;               ;; In modes like markdown-mode, it is common for a document to
-;;               ;; start with a deeply nested heading (e.g., ###) without any
-;;               ;; parent # or ## headings present. The standard
-;;               ;; outline-hide-sublevels command often fails to collapse the
-;;               ;; buffer correctly in these cases if it defaults to a level that
-;;               ;; does not exist or treats level 0 incorrectly.
-;;               (save-excursion
-;;                 (goto-char (point-min))
-;;
-;;                 ;; Handle preamble (if the file doesn't start with a heading)
-;;                 (unless (outline-on-heading-p)
-;;                   (outline-next-heading))
-;;
-;;                 (let* ((first-level (if (outline-on-heading-p)
-;;                                         (funcall outline-level)
-;;                                       1))
-;;                        (target-level (if (numberp first-level) first-level 1)))
-;;                   (cond
-;;                    ((fboundp 'outline-hide-sublevels)
-;;                     (outline-hide-sublevels target-level))
-;;                    ((fboundp 'hide-sublevels)
-;;                     (hide-sublevels target-level)))))
-;;             (kirigami--outline-ensure-window-start-heading-visible)))
-;;       ;; When `kirigami-enhance-outline' is nil
-;;       (cond
-;;        ((fboundp 'outline-hide-sublevels)
-;;         (outline-hide-sublevels 1))
-;;        ((fboundp 'hide-sublevels)
-;;         (hide-sublevels 1)))))))
 
 ;;; Menus and Minor Mode
 
