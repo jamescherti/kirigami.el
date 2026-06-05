@@ -711,19 +711,17 @@ and predictable visual expansion."
 (defun kirigami--outline-on-heading-p (&optional invisible-ok)
   "Return t if point is on an outline heading.
 If INVISIBLE-OK is non-nil, include invisible headings."
-  (save-excursion
-    (vertical-motion 0)
-    (cond
-     ((and (derived-mode-p 'org-mode)
-           (fboundp 'org-at-heading-p))
-      (org-at-heading-p (not invisible-ok)))
+  (cond
+   ((and (derived-mode-p 'org-mode)
+         (fboundp 'org-at-heading-p))
+    (org-at-heading-p (not invisible-ok)))
 
-     ((and (derived-mode-p 'org-mode)
-           (fboundp 'org-on-heading-p))
-      (org-on-heading-p (not invisible-ok)))
+   ((and (derived-mode-p 'org-mode)
+         (fboundp 'org-on-heading-p))
+    (org-on-heading-p (not invisible-ok)))
 
-     ((fboundp 'outline-on-heading-p)
-      (outline-on-heading-p invisible-ok)))))
+   ((fboundp 'outline-on-heading-p)
+    (outline-on-heading-p invisible-ok))))
 
 (defun kirigami--outline-show-entry (&rest _)
   "Ensure the current heading and body are fully visible.
