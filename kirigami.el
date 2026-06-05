@@ -757,7 +757,7 @@ the entry is fully visible."
                                      (kirigami--outline-on-heading-p)))
                (on-invisible-subheading (and
                                          kirigami-enhance-outline-open
-                                         on-visible-heading
+                                         (not on-visible-heading)
                                          (kirigami--outline-on-heading-p t)
                                          (kirigami--outline-invisible-p))))
           (unwind-protect
