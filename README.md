@@ -19,7 +19,7 @@ With Kirigami, folding key bindings only need to be configured **once**. After t
 
 It features both a buffer-local minor mode (`kirigami-mode`) and an editor-wide global minor mode (`kirigami-global-mode`) that expose all text-folding operations through keybindings, a menu bar entry, and context menus.
 
-In addition to unified interface, the kirigami package enhances folding behavior in `outline`, `markdown-mode`, and `org-mode` packages. It ensures that deep folds open reliably, allows folds to be closed even when the cursor is positioned inside the content, and ensures that sibling folds at the same level are visible when a sub-fold is expanded. When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
+In addition to providing a unified interface, the kirigami package enhances folding behavior in the `outline`, `markdown-mode`, and `org-mode` packages. It ensures that deep folds open reliably, allows folds to be closed even when the cursor is positioned inside the content, and ensures that sibling folds at the same level are visible when a sub-fold is expanded. For `org-mode` specifically, Kirigami now provides native folding support for elements such as source blocks (`#+begin_src`), drawers (`:TEST_DRAWER:`), and results (`#+RESULTS:`). When Kirigami closes outline folds, it preserves the visibility of folded headings in the window. Additionally, it resolves upstream Emacs issues, such as [bug#79286](https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-08/msg01128.html).
 
 If **kirigami** enhances your workflow, please show your support by **⭐ starring kirigami.el on GitHub** to help more Emacs users discover its benefits.
 
@@ -47,7 +47,7 @@ Here are the features that **kirigami** offers:
   - `ts-fold-mode`
 - In addition to unified interface for opening and closing folds, the **kirigami** package:
   - **Visual Stability:** Avoids the disruptive window jump by preserving the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start.
-  - **Enhances outline:** Improves folding in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode` by ensuring deep folds open reliably, keeping folded headings visible, and collapsing to the shallowest heading level.
+  - **Enhances outline and org-mode:** Improves folding in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode` by ensuring deep folds open reliably, keeping folded headings visible, and collapsing to the shallowest heading level. In `org-mode`, it intercepts folding commands to natively toggle source blocks (`#+begin_src`), drawers (`:TEST_DRAWER:`), and results (`#+RESULTS:`) sections without falling back to standard heading behavior.
   - **Hooks:** `kirigami-pre-action-predicates` and `kirigami-post-action-functions` run before and after each fold, allowing actions to be allowed or blocked and enabling UI or external updates after changes.
 
 The kirigami package supports Emacs version 26.3 and above.

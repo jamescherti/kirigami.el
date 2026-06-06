@@ -642,9 +642,76 @@ This is the Emacs version of `outline-hide-subtree'."
         (outline-flag-subtree t))
     (error "Required outline functions are undefined")))
 
+(defun kirigami--org-handle-element (action)
+  "Handle `org-mode' blocks, drawers, and results for ACTION.
+Return non-nil if an element was handled."
+  (when (and (derived-mode-p 'org-mode)
+             (not (kirigami--outline-on-heading-p))
+             ;; Do not intercept if the parent heading is folded. We want the
+             ;; fallback outline logic to unfold the heading instead.
+             (fboundp 'outline-back-to-heading)
+             (not (save-excursion
+                    (save-match-data
+                      (ignore-errors
+                        (outline-back-to-heading t)
+                        (kirigami--outline-invisible-p (line-end-position)))))))
+    (let ((handled nil)
+          (force (pcase action
+                   (:open 'off)
+                   (:close t)
+                   (:toggle nil))))
+      (cond
+       ;; Blocks
+       ((or (and (fboundp 'org-at-block-p)
+                 (ignore-errors (org-at-block-p)))
+            (and (fboundp 'org-in-src-block-p)
+                 (ignore-errors (org-in-src-block-p)))
+            (and (fboundp 'org-in-block-p)
+                 (ignore-errors
+                   (org-in-block-p '("src" "example" "export" "quote" "verse"
+                                     "center" "comment")))))
+        (condition-case nil
+            (progn
+              (if (fboundp 'org-fold-hide-block-toggle)
+                  (org-fold-hide-block-toggle force)
+                (when (fboundp 'org-hide-block-toggle)
+                  (org-hide-block-toggle force)))
+              (setq handled t))
+          (error nil)))
+
+       ;; RESULTS
+       ((and (fboundp 'org-babel-hide-result-toggle)
+             (save-excursion
+               (beginning-of-line)
+               (let ((case-fold-search t))
+                 (looking-at-p "^[ \t]*#\\+RESULTS:"))))
+        (condition-case nil
+            (progn
+              (org-babel-hide-result-toggle force)
+              (setq handled t))
+          (error nil)))
+
+       ;; Drawers
+       ((or (and (fboundp 'org-at-drawer-p)
+                 (ignore-errors (org-at-drawer-p)))
+            (and (fboundp 'org-in-drawer-p)
+                 (ignore-errors (org-in-drawer-p))))
+        (condition-case nil
+            (progn
+              (if (fboundp 'org-fold-hide-drawer-toggle)
+                  (org-fold-hide-drawer-toggle force)
+                (when (fboundp 'org-hide-drawer-toggle)
+                  (org-hide-drawer-toggle force)))
+              (setq handled t))
+          (error nil))))
+      handled)))
+
 (defun kirigami--outline-toggle-children ()
   "Show or hide the current `outline' subtree depending on its current state."
   (cond
+   ((kirigami--org-handle-element :toggle)
+    nil)
+
    ((and (bound-and-true-p outline-indent-minor-mode)
          (fboundp 'outline-indent-toggle-fold))
     (call-interactively 'outline-indent-toggle-fold))
@@ -986,6 +1053,9 @@ cursor."
 (defun kirigami--outline-close ()
   "Close the `outline' fold at point."
   (cond
+   ((kirigami--org-handle-element :close)
+    nil)
+
    ((and (bound-and-true-p outline-indent-minor-mode)
          (fboundp 'outline-indent-close-fold))
     (call-interactively 'outline-indent-close-fold))
@@ -1015,6 +1085,9 @@ cursor."
 (defun kirigami--outline-show-subtree ()
   "Open `outline' fold at point recursively."
   (cond
+   ((kirigami--org-handle-element :open)
+    nil)
+
    ((and (bound-and-true-p outline-indent-minor-mode)
          (fboundp 'outline-indent-open-fold-rec))
     (call-interactively 'outline-indent-open-fold-rec))
@@ -1032,6 +1105,9 @@ cursor."
 (defun kirigami--outline-open ()
   "Open the `outline' fold at point."
   (cond
+   ((kirigami--org-handle-element :open)
+    nil)
+
    ((and (bound-and-true-p outline-indent-minor-mode)
          (fboundp 'outline-indent-open-fold))
     (call-interactively 'outline-indent-open-fold))
