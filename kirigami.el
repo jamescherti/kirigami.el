@@ -31,7 +31,7 @@
 ;; `outli-mode', `embark-collect-mode', `vdiff-mode', `vdiff-3way-mode',
 ;; `hs-minor-mode' (hideshow), `hide-ifdef-mode', `vimish-fold-mode',
 ;; `TeX-fold-mode' (AUCTeX), `fold-this-mode', `origami-mode', `yafolding-mode',
-;; `folding-mode', and `ts-fold-mode'.
+;; `folding-mode', `ts-fold-mode', `ibuffer-mode', and `profiler-report-mode'.
 ;;
 ;; With Kirigami, folding key bindings only need to be configured once. After
 ;; that, the same keys work consistently across all supported major and minor
@@ -277,7 +277,40 @@ the window constant."
      :toggle     yafolding-toggle-element
      :open       yafolding-show-element
      :open-rec   yafolding-show-element
-     :close      yafolding-hide-element))
+     :close      yafolding-hide-element)
+    ((ibuffer-mode)
+     :open-all   kirigami--ibuffer-open-all
+     :close-all  kirigami--ibuffer-close-all
+     :toggle     kirigami--ibuffer-toggle
+     :open       kirigami--ibuffer-open
+     :open-rec   kirigami--ibuffer-open
+     :close      kirigami--ibuffer-close)
+    ((profiler-report-mode)
+     :open-all ,(lambda()
+                  (when (fboundp 'profiler-report-expand-entry)
+                    (save-excursion
+                      (goto-char (point-min))
+                      ;; Move past header or metadata lines to the first entry
+                      ;; if needed
+                      (while (not (eobp))
+                        (when (get-text-property (point) 'calltree)
+                          (profiler-report-expand-entry t))
+                        (forward-line 1)))))
+     :close-all ,(lambda()
+                   (let ((column (current-column)))
+                     (save-excursion
+                       (when (fboundp 'profiler-report-collapse-entry)
+                         (goto-char (point-max))
+                         ;; Walk backward collapsing entries so nested states
+                         ;; clear cleanly
+                         (while (eq (forward-line -1) 0)
+                           (when (get-text-property (point) 'calltree)
+                             (profiler-report-collapse-entry)))))
+                     (move-to-column column)))
+     :toggle     profiler-report-toggle-entry
+     :open       profiler-report-expand-entry
+     :open-rec   profiler-report-expand-entry
+     :close      profiler-report-collapse-entry))
   "Actions to be performed for various folding operations.
 
 The value should be a list of fold handlers, where a fold handler has
@@ -544,7 +577,6 @@ position of the parent heading to make it visible.
 This fixes an issue in `outline-mode', `outline-minor-mode', `org-mode',
 `markdown-mode', `outline-indent-minor-mode'... where folding a subtree that is
 partially scrolled off-screen causes the heading to disappear."
-  (interactive)
   (when (and kirigami-enhance-outline
              (fboundp 'outline-on-heading-p)
              (fboundp 'outline-invisible-p)
@@ -615,7 +647,6 @@ partially scrolled off-screen causes the heading to disappear."
   "Show the body directly following this heading.
 Show the heading too, if it is currently invisible.
 This is the Emacs version of `outline-show-entry'."
-  (interactive)
   (if (and (fboundp 'outline-back-to-heading)
            (fboundp 'outline-flag-region)
            (fboundp 'outline-next-preface))
@@ -634,7 +665,6 @@ This is the Emacs version of `outline-show-entry'."
   "Hide everything after this heading at deeper levels.
 If non-nil, EVENT should be a mouse event.
 This is the Emacs version of `outline-hide-subtree'."
-  (interactive (list last-nonmenu-event))
   (if (fboundp 'outline-flag-subtree)
       (save-excursion
         (when (mouse-event-p event)
@@ -731,7 +761,6 @@ entry until it is fully revealed. If invoked when the point is inside
 a completely hidden subtree, it manages the visibility state to avoid
 leaving the buffer in an inconsistent layout. This guarantees a safe
 and predictable visual expansion."
-  (interactive)
   (when (and (fboundp 'outline-back-to-heading)
              (fboundp 'outline-show-children)
              (fboundp 'outline-show-entry))
@@ -812,7 +841,6 @@ Repeatedly reveal children and body until the entry is no longer folded.
 
 After the loop, calls `kirigami--outline-legacy-show-entry' once more to ensure
 the entry is fully visible."
-  (interactive)
   (if (and (fboundp 'outline-on-heading-p)
            (fboundp 'outline-invisible-p)
            (fboundp 'outline-back-to-heading)
@@ -1216,6 +1244,77 @@ cursor."
       (outline-hide-sublevels 1))
      ((fboundp 'hide-sublevels)
       (hide-sublevels 1))))))
+
+;;; Functions: ibuffer
+
+(defun kirigami--ibuffer-toggle ()
+  "Toggle the filter group at point."
+  (let ((group (kirigami--ibuffer-get-group)))
+    (when group
+      (let ((clean-group (substring-no-properties group)))
+        (with-no-warnings
+          (if (member clean-group ibuffer-hidden-filter-groups)
+              (kirigami--ibuffer-open)
+            (kirigami--ibuffer-close)))))))
+
+(defun kirigami--ibuffer-open-all ()
+  "Expand all filter groups in Ibuffer."
+  (when (fboundp 'ibuffer-update)
+    (with-no-warnings
+      (setq ibuffer-hidden-filter-groups nil))
+    (ibuffer-update nil t)))
+
+(defun kirigami--ibuffer-close-all ()
+  "Collapse all filter groups in Ibuffer."
+  (when (fboundp 'ibuffer-update)
+    (let ((groups nil))
+      (save-excursion
+        (goto-char (point-min))
+        (while (not (eobp))
+          (let ((group (kirigami--ibuffer-get-group)))
+            (when group
+              (let ((clean-group (substring-no-properties group)))
+                (unless (member clean-group groups)
+                  (push clean-group groups)))))
+          (forward-line 1)))
+      (with-no-warnings
+        (setq ibuffer-hidden-filter-groups groups))
+      (ibuffer-update nil t))))
+
+(defun kirigami--ibuffer-get-group ()
+  "Safely extract the ibuffer group name from anywhere on the current line."
+  (save-excursion
+    (beginning-of-line)
+    (or (get-text-property (point) 'ibuffer-filter-group-name)
+        ;; Scan the line in case the cursor or indentation shifted
+        (let ((next-prop (next-single-property-change (point)
+                                                      'ibuffer-filter-group-name
+                                                      nil
+                                                      (line-end-position))))
+          (and next-prop (get-text-property next-prop
+                                            'ibuffer-filter-group-name))))))
+
+(defun kirigami--ibuffer-open ()
+  "Open the filter group at point."
+  (let ((group (kirigami--ibuffer-get-group)))
+    (when group
+      (let ((clean-group (substring-no-properties group)))
+        ;; Use string= to safely ignore any text property mismatches
+        (with-no-warnings
+          (when (member clean-group ibuffer-hidden-filter-groups)
+            (setq ibuffer-hidden-filter-groups
+                  (delete clean-group ibuffer-hidden-filter-groups))
+            (ibuffer-update nil t)))))))
+
+(defun kirigami--ibuffer-close ()
+  "Close the filter group at point."
+  (let ((group (kirigami--ibuffer-get-group)))
+    (when group
+      (let ((clean-group (substring-no-properties group)))
+        (with-no-warnings
+          (unless (member clean-group ibuffer-hidden-filter-groups)
+            (push clean-group ibuffer-hidden-filter-groups)
+            (ibuffer-update nil t)))))))
 
 ;;; Menus and Minor Mode
 

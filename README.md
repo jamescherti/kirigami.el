@@ -7,7 +7,7 @@
 
 The **kirigami** Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
 
-**Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `outli-mode`, `embark-collect-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `TeX-fold-mode` (AUCTeX), `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, and `hs-minor-mode` (hideshow).
+**Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `outli-mode`, `embark-collect-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `TeX-fold-mode` (AUCTeX), `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, `hs-minor-mode` (hideshow), `ibuffer-mode` (`M-x ibuffer`), and `profiler-report-mode` (`M-x profile-report`).
 
 With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable experience for opening and closing folds. The available interactive commands include:
 - `kirigami-open-fold`: Open the fold at point.
@@ -45,6 +45,8 @@ Here are the features that **kirigami** offers:
   - `fold-this-mode`
   - `yafolding-mode`
   - `ts-fold-mode`
+  - `ibuffer-mode` (toggle filter groups in `M-x ibuffer`)
+  - `profiler-report-mode` (expand/collapse `M-x profile-report` tree entries)
 - In addition to unified interface for opening and closing folds, the **kirigami** package:
   - **Visual Stability:** Avoids the disruptive window jump by preserving the cursor's exact vertical position when expanding or collapsing headings, maintaining a constant relative distance between the cursor and the window start.
   - **Enhances outline and org-mode:** Improves folding in `outline-mode`, `outline-minor-mode`, `markdown-mode`, `gfm-mode`, and `org-mode` by ensuring deep folds open reliably, keeping folded headings visible, and collapsing to the shallowest heading level. In `org-mode`, it intercepts folding commands to natively toggle source blocks (`#+begin_src`), drawers (`:TEST_DRAWER:`), and results (`#+RESULTS:`) sections without falling back to standard heading behavior.
