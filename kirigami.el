@@ -635,7 +635,7 @@ partially scrolled off-screen causes the heading to disappear."
           (catch 'done
             (progn
               (condition-case nil
-                  (outline-back-to-heading)
+                  (outline-back-to-heading t)
                 (error
                  (throw 'done t)))
 
@@ -676,63 +676,137 @@ This is the Emacs version of `outline-hide-subtree'."
   "Handle `org-mode' blocks, drawers, and results for ACTION.
 Return non-nil if an element was handled."
   (when (and (derived-mode-p 'org-mode)
-             (not (kirigami--outline-on-heading-p))
              ;; Do not intercept if the parent heading is folded. We want the
              ;; fallback outline logic to unfold the heading instead.
              (fboundp 'outline-back-to-heading)
+             (not (kirigami--outline-on-heading-p))
              (not (save-excursion
                     (save-match-data
                       (ignore-errors
                         (outline-back-to-heading t)
                         (kirigami--outline-invisible-p (line-end-position)))))))
-    (let ((handled nil)
-          (force (pcase action
-                   (:open 'off)
-                   (:close t)
-                   (:toggle nil))))
+    (let* ((handled nil)
+           (force (pcase action
+                    (:open 'off)
+                    (:close t)
+                    (:toggle nil)))
+           ;; Establish a hard limit for backward searches to ensure precision
+           ;; and prevent performance degradation for the RESULTS fallback.
+           (search-bound (save-excursion
+                           (if (ignore-errors (outline-back-to-heading t) t)
+                               (point)
+                             (point-min))))
+           (element (and (fboundp 'org-element-at-point)
+                         (org-element-at-point)))
+           (block-elem (and element
+                            (fboundp 'org-element-lineage)
+                            (org-element-lineage
+                             element
+                             '(center-block
+                               comment-block dynamic-block
+                               example-block export-block quote-block
+                               special-block src-block verse-block)
+                             t)))
+           (drawer-elem (and element
+                             (fboundp 'org-element-lineage)
+                             (org-element-lineage element
+                                                  '(drawer property-drawer)
+                                                  t))))
       (cond
        ;; Blocks
-       ((or (and (fboundp 'org-at-block-p)
-                 (ignore-errors (org-at-block-p)))
-            (and (fboundp 'org-in-src-block-p)
-                 (ignore-errors (org-in-src-block-p)))
-            (and (fboundp 'org-in-block-p)
-                 (ignore-errors
-                   (org-in-block-p '("src" "example" "export" "quote" "verse"
-                                     "center" "comment")))))
+       ((and block-elem
+             (fboundp 'org-element-post-affiliated)
+             (fboundp 'org-element-end)
+             ;; Strictly inside the block: from #+begin to #+end (inclusive),
+             ;; ignoring post-blank.
+             (>= (point) (save-excursion
+                           (goto-char (org-element-post-affiliated block-elem))
+                           (line-beginning-position)))
+             (<= (point) (save-excursion
+                           (goto-char (org-element-end block-elem))
+                           (skip-chars-backward " \r\t\n")
+                           (line-end-position))))
         (condition-case nil
             (progn
-              (if (fboundp 'org-fold-hide-block-toggle)
-                  (org-fold-hide-block-toggle force)
-                (when (fboundp 'org-hide-block-toggle)
-                  (org-hide-block-toggle force)))
-              (setq handled t))
+              (when (memq action '(:close :toggle))
+                ;; Use org-element-post-affiliated to jump directly to the
+                ;; #+begin line, bypassing any #+name or #+caption keywords.
+                (goto-char (org-element-post-affiliated block-elem)))
+
+              ;; Bubble up to the heading if the block is already closed
+              (if (and (eq action :close)
+                       (kirigami--outline-invisible-p (line-end-position)))
+                  nil
+                (if (fboundp 'org-fold-hide-block-toggle)
+                    (org-fold-hide-block-toggle force)
+                  (when (fboundp 'org-hide-block-toggle)
+                    (org-hide-block-toggle force)))
+                (setq handled t)))
           (error nil)))
 
        ;; RESULTS
        ((and (fboundp 'org-babel-hide-result-toggle)
-             (save-excursion
-               (beginning-of-line)
-               (let ((case-fold-search t))
-                 (looking-at-p "^[ \t]*#\\+RESULTS:"))))
+             (fboundp 'org-babel-result-end)
+             (boundp 'org-babel-result-regexp)
+             (let ((orig-pt (point))
+                   (case-fold-search t))
+               (or (save-excursion
+                     (beginning-of-line)
+                     (looking-at-p org-babel-result-regexp))
+                   (save-excursion
+                     (let ((results-pt (re-search-backward org-babel-result-regexp search-bound t)))
+                       (and results-pt
+                            ;; Delegate strict boundary parsing to the official
+                            ;; API
+                            (< orig-pt (save-excursion
+                                         (goto-char results-pt)
+                                         (org-babel-result-end)))))))))
         (condition-case nil
             (progn
-              (org-babel-hide-result-toggle force)
-              (setq handled t))
+              (when (memq action '(:close :toggle))
+                (let ((case-fold-search t))
+                  (unless (save-excursion (beginning-of-line) (looking-at-p org-babel-result-regexp))
+                    (let ((results-pt (save-excursion (re-search-backward org-babel-result-regexp search-bound t))))
+                      (when results-pt (goto-char results-pt))))))
+
+              ;; Bubble up to the heading if the results block is already closed.
+              ;; We step into the result body to reliably detect the invisible text property.
+              (if (and (eq action :close)
+                       (save-excursion
+                         (forward-line 1)
+                         (or (kirigami--outline-invisible-p (point))
+                             (kirigami--outline-invisible-p (line-end-position)))))
+                  nil
+                (org-babel-hide-result-toggle (if (eq force t) 'on force))
+                (setq handled t)))
           (error nil)))
 
        ;; Drawers
-       ((or (and (fboundp 'org-at-drawer-p)
-                 (ignore-errors (org-at-drawer-p)))
-            (and (fboundp 'org-in-drawer-p)
-                 (ignore-errors (org-in-drawer-p))))
+       ((and drawer-elem
+             (fboundp 'org-element-post-affiliated)
+             (fboundp 'org-element-end)
+             ;; Strictly inside the drawer: from :DRAWER: to :END: (inclusive), ignoring post-blank.
+             (>= (point) (save-excursion
+                           (goto-char (org-element-post-affiliated drawer-elem))
+                           (line-beginning-position)))
+             (<= (point) (save-excursion
+                           (goto-char (org-element-end drawer-elem))
+                           (skip-chars-backward " \r\t\n")
+                           (line-end-position))))
         (condition-case nil
             (progn
-              (if (fboundp 'org-fold-hide-drawer-toggle)
-                  (org-fold-hide-drawer-toggle force)
-                (when (fboundp 'org-hide-drawer-toggle)
-                  (org-hide-drawer-toggle force)))
-              (setq handled t))
+              (when (memq action '(:close :toggle))
+                (goto-char (org-element-post-affiliated drawer-elem)))
+
+              ;; Bubble up to the heading if the drawer is already closed
+              (if (and (eq action :close)
+                       (kirigami--outline-invisible-p (line-end-position)))
+                  nil
+                (if (fboundp 'org-fold-hide-drawer-toggle)
+                    (org-fold-hide-drawer-toggle force)
+                  (when (fboundp 'org-hide-drawer-toggle)
+                    (org-hide-drawer-toggle force)))
+                (setq handled t)))
           (error nil))))
       handled)))
 
@@ -951,7 +1025,7 @@ inside the fold)."
           (catch 'quit-function
             ;; Move to the current heading; error if before the first heading
             (condition-case nil
-                (outline-back-to-heading)
+                (outline-back-to-heading t)
               (error
                (throw 'quit-function t)))
 
