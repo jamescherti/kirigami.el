@@ -1021,7 +1021,7 @@ inside the fold)."
           (catch 'quit-function
             ;; Move to the current heading; error if before the first heading
             (condition-case nil
-                (outline-back-to-heading t)
+                (outline-back-to-heading)
               (error
                (throw 'quit-function t)))
 
