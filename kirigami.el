@@ -816,10 +816,6 @@ Return non-nil if an element was handled."
    ((kirigami--org-handle-element :toggle)
     nil)
 
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-toggle-fold))
-    (call-interactively 'outline-indent-toggle-fold))
-
    ((fboundp 'outline-toggle-children)
     (unwind-protect
         (outline-toggle-children)
@@ -1158,10 +1154,6 @@ cursor."
    ((kirigami--org-handle-element :close)
     nil)
 
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-close-fold))
-    (call-interactively 'outline-indent-close-fold))
-
    ((and kirigami-enhance-outline
          (fboundp 'kirigami--outline-hide-subtree))
     (if (and (fboundp 'outline-back-to-heading)
@@ -1190,10 +1182,6 @@ cursor."
    ((kirigami--org-handle-element :open)
     nil)
 
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-open-fold-rec))
-    (call-interactively 'outline-indent-open-fold-rec))
-
    ((fboundp 'outline-show-subtree)
     (unwind-protect
         (outline-show-subtree)
@@ -1209,10 +1197,6 @@ cursor."
   (cond
    ((kirigami--org-handle-element :open)
     nil)
-
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-open-fold))
-    (call-interactively 'outline-indent-open-fold))
 
    ((and kirigami-enhance-outline
          (fboundp 'kirigami--outline-show-entry))
@@ -1239,10 +1223,6 @@ cursor."
 (defun kirigami--outline-open-all ()
   "Show all `outline' folds and ensure the first heading remains visible."
   (cond
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-open-folds))
-    (call-interactively 'outline-indent-open-folds))
-
    ((fboundp 'outline-show-all)
     (unwind-protect
         (outline-show-all)
@@ -1256,10 +1236,6 @@ cursor."
 (defun kirigami--enhanced-outline-close-all ()
   "Close all `outline' folds and ensure the first heading remains visible."
   (cond
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-close-folds))
-    (call-interactively 'outline-indent-close-folds))
-
    ((or (fboundp 'hide-sublevels)
         (fboundp 'outline-hide-sublevels))
     (if kirigami-enhance-outline
@@ -1302,10 +1278,6 @@ cursor."
 (defun kirigami--outline-close-all ()
   "Close all `outline' folds and ensure the first heading remains visible."
   (cond
-   ((and (bound-and-true-p outline-indent-minor-mode)
-         (fboundp 'outline-indent-close-folds))
-    (call-interactively 'outline-indent-close-folds))
-
    ((and kirigami-enhance-outline
          kirigami-enhance-outline-close-all)
     (kirigami--enhanced-outline-close-all))
