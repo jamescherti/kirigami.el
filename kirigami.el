@@ -1073,16 +1073,19 @@ cursor."
   (declare (indent 0) (debug t))
   (let ((window (make-symbol "window"))
         (window-buffer (make-symbol "window-buffer"))
+        (orig-start (make-symbol "orig-start"))
         (lines-before-cursor (make-symbol "lines-before-cursor"))
         (start-pos (make-symbol "start-pos")))
     `(let* ((,window (selected-window))
             (,window-buffer (window-buffer ,window))
+            (,orig-start (when (and (window-live-p ,window)
+                                    (eq (current-buffer) ,window-buffer))
+                           (window-start ,window)))
             (,lines-before-cursor
-             (when (and (window-live-p ,window)
-                        (eq (current-buffer) ,window-buffer))
+             (when ,orig-start
                (count-screen-lines
                 (save-excursion
-                  (goto-char (window-start ,window))
+                  (goto-char ,orig-start)
                   (vertical-motion 0)
                   (point))
                 (save-excursion
@@ -1092,21 +1095,22 @@ cursor."
                 ,window))))
        (unwind-protect
            (progn ,@body)
-         (when (and ,lines-before-cursor
+         (when (and ,orig-start
                     (window-live-p ,window)
                     (buffer-live-p ,window-buffer)
                     (eq ,window-buffer (window-buffer ,window)))
            (with-selected-window ,window
-             (let ((,start-pos (save-excursion
-                                 (vertical-motion 0)
-                                 (vertical-motion (- ,lines-before-cursor)
-                                                  ,window)
-                                 (vertical-motion 0)
-                                 (point))))
-               (set-window-start ,window
-                                 ,start-pos
-                                 ;; No force
-                                 t))))))))
+             (if (and (not (kirigami--outline-invisible-p ,orig-start))
+                      (>= (point) ,orig-start)
+                      (< (count-screen-lines ,orig-start (point) nil ,window)
+                         (window-text-height ,window)))
+                 (set-window-start ,window ,orig-start t)
+               (let ((,start-pos (save-excursion
+                                   (vertical-motion 0)
+                                   (vertical-motion (- ,lines-before-cursor) ,window)
+                                   (vertical-motion 0)
+                                   (point))))
+                 (set-window-start ,window ,start-pos t)))))))))
 
 (defun kirigami--reset-hscroll-if-blank ()
   "Reset horizontal scroll to 0 if the current line is off-screen."
