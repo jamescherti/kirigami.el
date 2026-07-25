@@ -43,7 +43,7 @@
 ;; - `kirigami-close-fold': Close the fold at point.
 ;; - `kirigami-open-folds': Open all folds in the buffer.
 ;; - `kirigami-close-folds': Close all folds in the buffer.
-;; - `kirigami-toggle-fold': Toggle the fold at point.
+;; - `kirigami-toggle-fold': Toggle the fold at point or mouse event.
 ;;
 ;; (In addition to unified interface, the kirigami package enhances folding
 ;; behavior in outline-mode, outline-minor-mode, markdown-mode, and
@@ -1441,11 +1441,13 @@ See also `kirigami-open-fold'."
   (kirigami--reset-hscroll-if-blank))
 
 ;;;###autoload
-(defun kirigami-toggle-fold ()
-  "Open or close a fold under point.
+(defun kirigami-toggle-fold (&optional event)
+  "Open or close a fold under point or mouse EVENT.
 See also `kirigami-open-fold' and `kirigami-close-fold'."
-  (interactive)
+  (interactive (list last-nonmenu-event))
   (kirigami--with-visual-position
+    (when (mouse-event-p event)
+      (posn-set-point (event-end event)))
     (kirigami-fold-action kirigami-fold-list :toggle))
   (kirigami--reset-hscroll-if-blank))
 
