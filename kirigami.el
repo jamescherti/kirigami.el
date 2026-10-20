@@ -440,9 +440,6 @@ The return values of functions in this hook are ignored.")
 
 ;;; Internal functions
 
-(declare-function pos-bol nil)
-(declare-function pos-eol nil)
-
 (defalias 'kirigami--pos-bol
   (if (fboundp 'pos-bol) #'pos-bol #'line-beginning-position))
 
