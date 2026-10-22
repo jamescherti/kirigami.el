@@ -122,22 +122,22 @@ the window constant."
      :toggle     ,(lambda ()
                     (when (fboundp 'treesit-fold-toggle)
                       (save-excursion
-                        (kirigami--normalize-point)
+                        (kirigami--treesit-fold-normalize-point)
                         (treesit-fold-toggle))))
      :open       ,(lambda ()
                     (when (fboundp 'treesit-fold-open)
                       (save-excursion
-                        (kirigami--normalize-point)
+                        (kirigami--treesit-fold-normalize-point)
                         (treesit-fold-open))))
      :open-rec   ,(lambda ()
                     (when (fboundp 'treesit-fold-open-recursively)
                       (save-excursion
-                        (kirigami--normalize-point)
+                        (kirigami--treesit-fold-normalize-point)
                         (treesit-fold-open-recursively))))
      :close      ,(lambda ()
                     (when (fboundp 'treesit-fold-close)
                       (save-excursion
-                        (kirigami--normalize-point)
+                        (kirigami--treesit-fold-normalize-point)
                         (treesit-fold-close)))))
     ((outline-mode
       outline-minor-mode
@@ -490,12 +490,62 @@ within the leading whitespace."
 
   ;; Adjust point only if it resides inside the leading whitespace.
   ;; In `treesit-fold-mode', for example, this avoids overriding specific
-  ;; sub-node targeting later on the line.
-  ;; For example, if point is on the '[' in 'val = [1, 2, 3]', an unconditional
-  ;; jump back to indentation shifts targeting to 'val' and folds the entire
-  ;; assignment instead of the array.
+  ;; sub-node targeting later on the line. For example, if point is on the
+  ;; '[' in 'val = [1, 2, 3]', an unconditional jump back to indentation shifts
+  ;; targeting to 'val' and folds the entire assignment instead of the array.
   (when (< (current-column) (current-indentation))
     (back-to-indentation)))
+
+(defun kirigami--treesit-fold-overlay-on-current-line ()
+  "Return the outermost `treesit-fold' overlay relevant to point on the line."
+  (let* ((bol (kirigami--pos-bol))
+         (overlays (overlays-in bol
+                                (min (point-max) (1+ (kirigami--pos-eol)))))
+         found)
+    (while overlays
+      (let ((ov (car overlays)))
+        (when (and (eq (overlay-get ov 'invisible) 'treesit-fold)
+                   (or (>= (overlay-start ov) bol)
+                       (<= (point) (overlay-end ov)))
+                   (or (not found)
+                       (< (overlay-start ov) (overlay-start found))))
+          (setq found ov)))
+      (setq overlays (cdr overlays)))
+    found))
+
+(defun kirigami--treesit-fold-normalize-point ()
+  "Adjust point to a valid foldable node for `treesit-fold-mode'."
+  (kirigami--normalize-point)
+  (let ((ov (kirigami--treesit-fold-overlay-on-current-line)))
+    (if ov
+        (let ((ov-start (overlay-start ov)))
+          (if (and (fboundp 'treesit-fold--foldable-node-at-pos)
+                   (fboundp 'treesit-fold-overlay-at)
+                   (> ov-start (point-min))
+                   (not (eq ov (treesit-fold-overlay-at
+                                (treesit-fold--foldable-node-at-pos ov-start))))
+                   (eq ov (treesit-fold-overlay-at
+                           (treesit-fold--foldable-node-at-pos (1- ov-start)))))
+              (goto-char (1- ov-start))
+            (goto-char ov-start)))
+      (when (and (fboundp 'treesit-fold--foldable-node-at-pos)
+                 (fboundp 'treesit-node-start))
+        (let* ((bol (kirigami--pos-bol))
+               (eol (kirigami--pos-eol))
+               (node (treesit-fold--foldable-node-at-pos)))
+          ;; Scan forward if there is no foldable node at point, or if the
+          ;; node at point is an enclosing parent block from an earlier line.
+          (unless (and node (>= (treesit-node-start node) bol))
+            (let ((found nil))
+              (save-excursion
+                (while (and (< (point) eol) (not found))
+                  (forward-char 1)
+                  (let ((curr-node (treesit-fold--foldable-node-at-pos)))
+                    (when (and curr-node
+                               (>= (treesit-node-start curr-node) bol))
+                      (setq found (point))))))
+              (when found
+                (goto-char found)))))))))
 
 (defun kirigami--call-preserve-column (fn)
   "Call FN and restore point to the original column when possible."
