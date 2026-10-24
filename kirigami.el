@@ -139,32 +139,6 @@ the window constant."
                       (save-excursion
                         (kirigami--treesit-fold-normalize-point)
                         (treesit-fold-close)))))
-    ((outline-mode
-      outline-minor-mode
-      outline-indent-minor-mode
-      org-mode
-      markdown-mode
-      gfm-mode)
-     :open-all   kirigami--outline-open-all
-     :close-all  kirigami--outline-close-all
-     :toggle     kirigami--outline-toggle-children
-     :open       kirigami--outline-open
-     :open-rec   kirigami--outline-show-subtree
-     :close      kirigami--outline-close)
-    ((vdiff-mode)
-     :open-all   vdiff-open-all-folds
-     :close-all  vdiff-close-all-folds
-     :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
-     :open       ,(lambda () (call-interactively 'vdiff-open-fold))
-     :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
-     :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
-    ((vdiff-3way-mode)
-     :open-all   vdiff-open-all-folds
-     :close-all  vdiff-close-all-folds
-     :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
-     :open       ,(lambda () (call-interactively 'vdiff-open-fold))
-     :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
-     :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
     ((hs-minor-mode)
      :open-all   hs-show-all
      :close-all  ,(lambda ()
@@ -195,13 +169,6 @@ the window constant."
                    ;; backward
                    ;; TODO: Emacs patch?
                    (kirigami--call-preserve-column 'hs-hide-block)))
-    ((hide-ifdef-mode)
-     :open-all   show-ifdefs
-     :close-all  hide-ifdefs
-     :toggle     nil
-     :open       show-ifdef-block
-     :open-rec   nil
-     :close      hide-ifdef-block)
     ((ts-fold-mode)
      :open-all    ts-fold-open-all
      :close-all   ts-fold-close-all
@@ -209,6 +176,27 @@ the window constant."
      :open        ts-fold-open
      :open-rec    ts-fold-open-recursively
      :close       ts-fold-close)
+    ((vdiff-mode)
+     :open-all   vdiff-open-all-folds
+     :close-all  vdiff-close-all-folds
+     :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
+     :open       ,(lambda () (call-interactively 'vdiff-open-fold))
+     :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
+     :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
+    ((vdiff-3way-mode)
+     :open-all   vdiff-open-all-folds
+     :close-all  vdiff-close-all-folds
+     :toggle     ,(lambda () (call-interactively 'vdiff-toggle-fold))
+     :open       ,(lambda () (call-interactively 'vdiff-open-fold))
+     :open-rec   ,(lambda () (call-interactively 'vdiff-open-fold))
+     :close      ,(lambda () (call-interactively 'vdiff-close-fold)))
+    ((hide-ifdef-mode)
+     :open-all   show-ifdefs
+     :close-all  hide-ifdefs
+     :toggle     nil
+     :open       show-ifdef-block
+     :open-rec   nil
+     :close      hide-ifdef-block)
     ((folding-mode)
      :open-all   folding-open-buffer
      :close-all  ,(lambda()
@@ -310,7 +298,19 @@ the window constant."
      :toggle     profiler-report-toggle-entry
      :open       profiler-report-expand-entry
      :open-rec   profiler-report-expand-entry
-     :close      profiler-report-collapse-entry))
+     :close      profiler-report-collapse-entry)
+    ((outline-mode
+      outline-minor-mode
+      outline-indent-minor-mode
+      org-mode
+      markdown-mode
+      gfm-mode)
+     :open-all   kirigami--outline-open-all
+     :close-all  kirigami--outline-close-all
+     :toggle     kirigami--outline-toggle-children
+     :open       kirigami--outline-open
+     :open-rec   kirigami--outline-show-subtree
+     :close      kirigami--outline-close))
   "Actions to be performed for various folding operations.
 
 The value should be a list of fold handlers, where a fold handler has
