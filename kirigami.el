@@ -3,7 +3,7 @@
 ;; Copyright (C) 2025-2026 James Cherti | https://www.jamescherti.com/contact/
 
 ;; Author: James Cherti <https://www.jamescherti.com/contact/>
-;; Version: 1.2.1
+;; Version: 1.2.2
 ;; URL: https://github.com/jamescherti/kirigami.el
 ;; Keywords: outlines, convenience
 ;; Package-Requires: ((emacs "26.1"))
