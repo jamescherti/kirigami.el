@@ -209,6 +209,8 @@ To implement visual line numbering as your global default, set the following var
 
 Note that you must still enable the mode itself (for example, via `M-x global-display-line-numbers-mode`) for the line numbers to appear.
 
+Related article: [Fixing slow scrolling in Emacs display-line-numbers-mode](https://www.jamescherti.com/emacs-display-line-numbers-mode-performance/)
+
 ### Maintaining independent folding states in separate windows via indirect buffers (clones)
 
 Opening the same buffer in multiple windows results in synchronized folding states; any folding or unfolding action performed in one window is immediately reflected in all others.
