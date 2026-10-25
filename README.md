@@ -6,7 +6,7 @@
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
 - Author: James Cherti <[https://www.jamescherti.com/](https://www.jamescherti.com/)>
-- License: GPL
+- License: GPL 3.0
 
 The **[kirigami.el](https://github.com/jamescherti/kirigami.el)** Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
 
