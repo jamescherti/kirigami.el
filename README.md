@@ -5,11 +5,10 @@
 ![License](https://img.shields.io/github/license/jamescherti/kirigami.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-- Git repository: [kirigami.el](https://github.com/jamescherti/kirigami.el)
 - Author: [James Cherti](https://www.jamescherti.com/)
 - License: GPL
 
-The **kirigami** Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
+The **[kirigami.el](https://github.com/jamescherti/kirigami.el)** Emacs package provides a unified method to fold and unfold text in Emacs across a diverse set of Emacs modes.
 
 **Supported modes include:** `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `gfm-mode`, `outli-mode`, `embark-collect-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hide-ifdef-mode`, `vimish-fold-mode`, `TeX-fold-mode` (AUCTeX), `fold-this-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, `ts-fold-mode`, `treesit-fold-mode`, `hs-minor-mode` (hideshow), `ibuffer-mode` (`M-x ibuffer`), and `profiler-report-mode` (`M-x profile-report`).
 
