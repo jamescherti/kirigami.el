@@ -927,7 +927,6 @@ and predictable visual expansion."
                        (when (invisible-p (kirigami--pos-eol))
                          ;; Ignore errors to guarantee the target entry is
                          ;; still revealed via `outline-show-entry' even
-                         ;; if a buggy third-party `outline-level'
                          ;; function fails during child expansion.
                          (ignore-errors (outline-show-children))
 
