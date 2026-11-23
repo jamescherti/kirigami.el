@@ -111,6 +111,8 @@ the window constant."
   :type 'boolean
   :group 'kirigami)
 
+(defvar hs-allow-nesting)
+
 (defvar kirigami-fold-list
   `(((treesit-fold-mode)
      :open-all   ,(lambda ()
@@ -163,7 +165,19 @@ the window constant."
                    ;; backward
                    ;; TODO: Emacs patch?
                    (kirigami--call-preserve-column 'hs-show-block))
-     :open-rec  nil
+     :open-rec  ,(lambda ()
+                   ;; Without nesting, `hs-show-block' discards the overlays of
+                   ;; the nested blocks too.  Before Emacs 31.1 it deletes only
+                   ;; the overlay of a hidden block and moves point to the
+                   ;; block's start, from where the second call finds the block
+                   ;; open and discards the nested ones.
+                   (when (fboundp 'hs-show-block)
+                     (let ((hs-allow-nesting nil)
+                           (column (current-column)))
+                       (hs-show-block)
+                       (when (< emacs-major-version 31)
+                         (hs-show-block))
+                       (move-to-column column))))
      :close     ,(lambda ()
                    ;; Restore the column because `hs-hide-block' may move point
                    ;; backward
