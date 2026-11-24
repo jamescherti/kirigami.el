@@ -163,7 +163,11 @@ the window constant."
                    ;; backward
                    ;; TODO: Emacs patch?
                    (kirigami--call-preserve-column 'hs-show-block))
-     :open-rec  nil
+     :open-rec  ,(lambda ()
+                   ;; Restore the column because `hs-show-block' may move point
+                   ;; backward
+                   ;; TODO: Emacs patch?
+                   (kirigami--call-preserve-column 'hs-show-block))
      :close     ,(lambda ()
                    ;; Restore the column because `hs-hide-block' may move point
                    ;; backward
