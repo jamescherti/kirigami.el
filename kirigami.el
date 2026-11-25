@@ -89,19 +89,19 @@ specific reason to disable these enhancements."
 
 (defvar kirigami-enhance-outline-open nil
   "EXPERIMENTAL. Non-nil to detect if a heading is invisible before opening it.
-When enabled, Kirigami checks if the cursor is on an invisible subheading during
-an expansion. If so, it closes that specific subheading after the reveal
-process. If nil, subheadings are left open regardless of their initial
-visibility state.")
+When this variable and `kirigami-enhance-outline' are both non-nil, Kirigami
+checks if the cursor is on an invisible subheading during an expansion. If so,
+it closes that specific subheading after the reveal process. If nil,
+subheadings are left open regardless of their initial visibility state.")
 
 (defvar kirigami-enhance-outline-close-all nil
   "EXPERIMENTAL. Non-nil to enable enhanced behavior when closing all folds.
 When this variable and `kirigami-enhance-outline' are both non-nil,
-Kirigami applies a targeted method to collapse all headings. This fixes layout
-issues where buffers begin with deeply nested headings (such as
-`###' in `markdown-mode' without a preceding `#' or `##'), overriding the
-default `outline-hide-sublevels' logic to correctly handle level 0.
-This can be slow in some cases.")
+Kirigami determines the level of the first heading in the buffer and passes
+it to `outline-hide-sublevels', collapsing the entire buffer. This fixes
+layout issues where buffers begin with deeply nested headings (such as
+`###' in `markdown-mode' without a preceding `#' or `##'), which the default
+level 1 call leaves visible along with their content.")
 
 (defcustom kirigami-preserve-visual-position nil
   "When non-nil, maintain the vertical position of the cursor during folding.
