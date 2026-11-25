@@ -310,7 +310,7 @@ the window constant."
       markdown-mode
       gfm-mode)
      :open-all   kirigami--outline-open-all
-     :close-all  kirigami--outline-close-all
+     :close-all  kirigami--enhanced-outline-close-all
      :toggle     kirigami--outline-toggle-children
      :open       kirigami--outline-open
      :open-rec   kirigami--outline-show-subtree
@@ -1299,7 +1299,8 @@ cursor."
   (cond
    ((or (fboundp 'hide-sublevels)
         (fboundp 'outline-hide-sublevels))
-    (if kirigami-enhance-outline
+    (if (and kirigami-enhance-outline
+             kirigami-enhance-outline-close-all)
         (when (and (fboundp 'outline-on-heading-p)
                    (fboundp 'outline-next-heading)
                    (boundp 'outline-level))
@@ -1329,28 +1330,12 @@ cursor."
                    ((fboundp 'hide-sublevels)
                     (hide-sublevels target-level)))))
             (kirigami--outline-ensure-window-start-heading-visible)))
-      ;; When `kirigami-enhance-outline' is nil
+      ;; When `kirigami-enhance-outline' or `kirigami-enhance-outline-close-all' is nil
       (cond
        ((fboundp 'outline-hide-sublevels)
         (outline-hide-sublevels 1))
        ((fboundp 'hide-sublevels)
         (hide-sublevels 1)))))))
-
-(defun kirigami--outline-close-all ()
-  "Close all `outline' folds and ensure the first heading remains visible."
-  (cond
-   ((and kirigami-enhance-outline
-         kirigami-enhance-outline-close-all)
-    (kirigami--enhanced-outline-close-all))
-
-   ((or (fboundp 'hide-sublevels)
-        (fboundp 'outline-hide-sublevels))
-    ;; When `kirigami-enhance-outline' is nil
-    (cond
-     ((fboundp 'outline-hide-sublevels)
-      (outline-hide-sublevels 1))
-     ((fboundp 'hide-sublevels)
-      (hide-sublevels 1))))))
 
 ;;; Functions: ibuffer
 
